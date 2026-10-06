@@ -1,0 +1,60 @@
+# ==============================================================================
+# 🏮 YAMATO SHOKUDŌ POS - SYSTEM REQUIREMENTS & DEPENDENCIES 🏮
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. PROGRAMMING LANGUAGES & CORE RUNTIME
+# ------------------------------------------------------------------------------
+# - HTML5 (Semantic Structure, Responsive Viewport)
+# - CSS3 (Modern Flexbox, CSS Grid, Glassmorphism, CSS Custom Properties / Variables)
+# - JavaScript (ES6+ Vanilla, LocalStorage API, Service Worker API, DOM Manipulation)
+# - Python >= 3.8 (Used for local lightweight network HTTP server & launcher)
+
+# ------------------------------------------------------------------------------
+# 2. PYTHON LIBRARIES
+# ------------------------------------------------------------------------------
+# Core server modules (http.server, socketserver, webbrowser, socket) are part of
+# the Python Standard Library and require NO external installation.
+#
+# Optional image processing library (used for cropping/generating icons):
+Pillow>=10.0.0
+
+# ------------------------------------------------------------------------------
+# 3. FRONTEND LIBRARIES & CDN ASSETS
+# ------------------------------------------------------------------------------
+# - Font Awesome Icons v6.5.1 (CDN: https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css)
+# - Google Fonts:
+#     * Plus Jakarta Sans (UI text & body)
+#     * Outfit (Headings, branding, price badges & numbers)
+#     * Noto Sans JP (Asian typographic accents)
+
+# ------------------------------------------------------------------------------
+# 4. STORAGE & BROWSER APIS
+# ------------------------------------------------------------------------------
+# - Web Storage API (localStorage for persistent menu catalog, prices, and sales logs)
+# - Service Worker API (sw.js for full offline caching and instant load)
+# - Web App Manifest (manifest.json for standalone PWA & APK installability)
+# - Window Print API (window.print() with @media print CSS for thermal receipt printers)
+
+# ------------------------------------------------------------------------------
+# 5. SUPPORTED OPERATING SYSTEMS & DEVICES
+# ------------------------------------------------------------------------------
+# - Windows 10 / 11 (PC, Laptop, POS Desktop Touch Terminals)
+# - Android 8.0+ (Android Tablets, POS Handhelds, Smartphones via Google Chrome)
+# - iOS 13+ / iPadOS (Apple iPad & iPhone via Safari)
+# - macOS / Linux (Any modern browser)
+
+# ------------------------------------------------------------------------------
+# 6. HARDWARE & PERIPHERALS COMPATIBILITY
+# ------------------------------------------------------------------------------
+# - Thermal POS Receipt Printers (58mm and 80mm USB, Bluetooth, or Wi-Fi printers)
+# - Touchscreen POS Displays & Tablets (7", 10", 12", 15" screens)
+# - Standard Barcode Scanners (HID Keyboard Emulation)
+# - Cash Drawers (Triggered via Receipt Printer RJ11/RJ12 port)
+
+# ------------------------------------------------------------------------------
+# 7. OPTIONAL APK PACKAGING TOOLS (For Standalone Android .apk)
+# ------------------------------------------------------------------------------
+# - PWABuilder (https://www.pwabuilder.com - Online 1-click APK builder, no install needed)
+# - Node.js >= 18.0.0 (Only if compiling APK locally via Bubblewrap CLI or Capacitor)
+# - Java JDK >= 17 & Android SDK (Only if building locally via Android Studio)

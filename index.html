@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#E5252A">
+  <meta name="description" content="Yamato Shokudo Authentic Japanese Comfort Food - Point of Sale (POS) System">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  
+  <title>Yamato Shokudō POS</title>
+
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="style.css?v=20">
+</head>
+<body>
+
+  <div id="app-container">
+    
+    <!-- ====================================================================
+         TOP NAVIGATION HEADER
+         ==================================================================== -->
+    <header class="pos-header">
+      <div class="brand-section">
+        <img src="assets/logo.png" alt="Yamato Shokudo Logo" class="brand-logo" id="header-logo">
+        <div class="brand-titles">
+          <div class="brand-name">
+            <span class="red-char">Y</span>amato <span class="red-char">S</span>hokudō
+          </div>
+          <div class="brand-tagline">Authentic Japanese Eats • POS Terminal</div>
+        </div>
+      </div>
+
+      <div class="header-center-info">
+        <div class="live-badge">
+          <span class="live-dot"></span>
+          <span id="pos-live-clock">--:--:--</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Add / Manage Menu Item Button -->
+        <button class="btn-nav-action" id="btn-open-add-item" title="Add New Item to Menu">
+          <i class="fa-solid fa-circle-plus" style="color: var(--primary-red);"></i>
+          <span>Add Item</span>
+        </button>
+
+        <!-- Manage Mode Toggle -->
+        <button class="btn-nav-action" id="btn-toggle-manage-mode" title="Toggle Edit/Delete Mode on Catalog">
+          <i class="fa-solid fa-pen-to-square"></i>
+          <span id="manage-mode-label">Edit Menu</span>
+        </button>
+
+        <!-- Current / Active Orders Queue -->
+        <button class="btn-nav-action" id="btn-open-orders" title="View Current Active Orders">
+          <i class="fa-solid fa-bell-concierge" style="color: var(--accent-gold);"></i>
+          <span>Orders</span>
+          <span class="active-orders-count-badge" id="active-orders-count-badge" style="display: none;">0</span>
+        </button>
+
+        <!-- Sales Analytics & History -->
+        <button class="btn-nav-action" id="btn-open-history" title="View Sales History & Reports">
+          <i class="fa-solid fa-chart-line" style="color: var(--accent-purple-light);"></i>
+          <span>Sales</span>
+        </button>
+
+        <!-- APK / Tablet Install Guide -->
+        <button class="btn-nav-action primary" id="btn-open-install" title="Install on Tablet / PC / APK">
+          <i class="fa-solid fa-tablet-screen-button"></i>
+          <span>App / APK</span>
+        </button>
+
+        <!-- Mobile Cart Open Button -->
+        <button class="btn-nav-action btn-mobile-cart-toggle primary" id="btn-mobile-cart-toggle">
+          <i class="fa-solid fa-cart-shopping"></i>
+          <span class="cart-count-badge" id="mobile-cart-badge">0</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ====================================================================
+         MAIN SPLIT WORKSPACE (TABLET OPTIMIZED)
+         ==================================================================== -->
+    <main class="pos-body">
+
+      <!-- LEFT PANEL: CATALOG & MENU -->
+      <section class="pos-catalog-panel">
+        <div class="catalog-controls">
+          <div class="search-and-manage-row">
+            <div class="search-input-wrapper">
+              <i class="fa-solid fa-magnifying-glass search-icon"></i>
+              <input type="text" id="catalog-search" class="search-input" placeholder="Search dishes, ramen, katsu, drinks, add-ons...">
+              <button class="btn-clear-search" id="btn-clear-search" title="Clear Search">&times;</button>
+            </div>
+          </div>
+
+          <!-- Category Filter Bar -->
+          <div class="categories-bar" id="categories-bar">
+            <!-- Dynamically populated categories -->
+          </div>
+        </div>
+
+        <!-- Scrollable Items Grid -->
+        <div class="items-scroll-area">
+          <div class="items-grid" id="items-grid">
+            <!-- Dynamically rendered dish cards -->
+          </div>
+          <div class="empty-catalog-state" id="empty-catalog-state" style="display: none;">
+            <i class="fa-solid fa-bowl-food"></i>
+            <h3>No items found</h3>
+            <p>Try a different search keyword or category filter</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT PANEL: CART & ORDER SUMMARY -->
+      <section class="pos-cart-panel" id="pos-cart-panel">
+        <div class="cart-header">
+          <div class="cart-title-row">
+            <div class="cart-title">
+              <i class="fa-solid fa-receipt" style="color: var(--primary-red);"></i>
+              Current Order
+              <span class="cart-count-badge" id="cart-items-count">0</span>
+            </div>
+            <button class="btn-clear-cart" id="btn-clear-cart" title="Clear Cart">
+              <i class="fa-solid fa-trash-can"></i>
+              Clear
+            </button>
+          </div>
+
+          <!-- Order Config: Dine In / Take Out & Table -->
+          <div class="order-setup-row">
+            <select id="order-type-select" class="order-type-select">
+              <option value="Dine In">🥢 Dine In</option>
+              <option value="Take Out">🥡 Take Out</option>
+              <option value="Delivery">🛵 Delivery</option>
+            </select>
+            <input type="text" id="order-table-input" class="table-num-input" placeholder="Table / Customer #">
+          </div>
+        </div>
+
+        <!-- Cart Items Scroll List -->
+        <div class="cart-items-list" id="cart-items-list">
+          <!-- Dynamically rendered cart items -->
+        </div>
+
+        <!-- Empty Cart State -->
+        <div class="empty-cart-view" id="empty-cart-view">
+          <div class="empty-cart-icon">
+            <i class="fa-solid fa-utensils"></i>
+          </div>
+          <h4>Cart is Empty</h4>
+          <p>Tap items from the menu on the left to add them to this order.</p>
+        </div>
+
+        <!-- Cart Billing Footer -->
+        <div class="cart-footer">
+          <div class="billing-breakdown">
+            <div class="billing-row">
+              <span>Subtotal</span>
+              <span id="cart-subtotal-val">₱0.00</span>
+            </div>
+            <div class="billing-row discount-row">
+              <div class="billing-discount-control">
+                <span>Discount:</span>
+                <select id="discount-select" class="discount-select">
+                  <option value="0">None (0%)</option>
+                  <option value="20">Senior / PWD (20%)</option>
+                  <option value="10">Promo (10%)</option>
+                  <option value="5">Loyalty (5%)</option>
+                </select>
+              </div>
+              <span id="cart-discount-val">-₱0.00</span>
+            </div>
+            <div class="billing-row total-row">
+              <span>TOTAL</span>
+              <span class="total-amount-display" id="cart-total-val">₱0.00</span>
+            </div>
+          </div>
+
+          <button class="btn-checkout" id="btn-checkout" disabled>
+            <i class="fa-solid fa-cash-register"></i>
+            <span>Charge ₱0.00</span>
+          </button>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- ====================================================================
+       MODAL 1: ADD / EDIT MENU ITEM MODAL
+       ==================================================================== -->
+  <div class="modal-overlay" id="modal-item">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-item-title">
+          <i class="fa-solid fa-circle-plus" style="color: var(--primary-red);"></i>
+          Add Menu Item
+        </h3>
+        <button class="btn-close-modal" id="btn-close-item-modal">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="edit-item-id">
+
+        <div class="form-group">
+          <label class="form-label" for="item-name-input">Item Name *</label>
+          <input type="text" id="item-name-input" class="form-input" placeholder="e.g. Torikatsu Curry" required>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label" for="item-price-input">Price (₱) *</label>
+            <input type="number" id="item-price-input" class="form-input" placeholder="160" min="0" step="1" required>
+          </div>
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+              <label class="form-label" for="item-category-input" style="margin-bottom: 0;">Category *</label>
+              <div style="display: flex; gap: 4px;">
+                <button type="button" class="btn-text-action" id="btn-quick-add-cat-from-item" title="Add New Category">
+                  <i class="fa-solid fa-plus"></i> Add
+                </button>
+                <button type="button" class="btn-text-action" id="btn-manage-cats-from-item" title="Manage Categories">
+                  <i class="fa-solid fa-gear"></i>
+                </button>
+              </div>
+            </div>
+            <select id="item-category-input" class="form-select">
+              <!-- Dynamically populated categories -->
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="item-desc-input">Description</label>
+          <textarea id="item-desc-input" class="form-textarea" rows="2" placeholder="Crispy chicken cutlet served with rice and rich Japanese curry sauce..."></textarea>
+        </div>
+
+        <!-- Image Selector -->
+        <div class="form-group">
+          <label class="form-label">Item Image</label>
+          <input type="text" id="item-img-url" class="form-input" placeholder="Image URL or choose preset below">
+          
+          <label class="form-label" style="margin-top: 8px; font-size: 0.8rem;">Or Select Brand Preset:</label>
+          <div class="image-picker-options" id="image-presets-container">
+            <!-- Preset thumbnails -->
+            <img src="assets/torikatsu_curry.jpg" class="image-choice-thumb" data-src="assets/torikatsu_curry.jpg" title="Torikatsu Curry">
+            <img src="assets/katsudon.jpg" class="image-choice-thumb" data-src="assets/katsudon.jpg" title="Katsudon">
+            <img src="assets/teriyaki_katsu.jpg" class="image-choice-thumb" data-src="assets/teriyaki_katsu.jpg" title="Teriyaki Katsu">
+            <img src="assets/gyudon.jpg" class="image-choice-thumb" data-src="assets/gyudon.jpg" title="Gyudon">
+            <img src="assets/melon_soda.jpg" class="image-choice-thumb" data-src="assets/melon_soda.jpg" title="Melon Cream Soda">
+            <img src="assets/matcha_icecream.jpg" class="image-choice-thumb" data-src="assets/matcha_icecream.jpg" title="Matcha Ice Cream">
+            <img src="assets/logo.png" class="image-choice-thumb" data-src="assets/logo.png" title="Yamato Logo">
+          </div>
+
+          <div style="margin-top: 8px;">
+            <label class="form-label" style="font-size: 0.8rem;">Or Upload Local File:</label>
+            <input type="file" id="item-file-upload" accept="image/*" class="form-input" style="padding: 6px;">
+          </div>
+        </div>
+
+        <div class="form-group" style="flex-direction: row; align-items: center; gap: 8px; margin-top: 4px;">
+          <input type="checkbox" id="item-bestseller-input" style="width: 18px; height: 18px; accent-color: var(--primary-red);">
+          <label for="item-bestseller-input" style="font-size: 0.9rem; font-weight: 700; color: var(--accent-gold); cursor: pointer;">
+            Mark as Best Seller Ribbon ⭐
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-modal-action" id="btn-cancel-item">Cancel</button>
+        <button class="btn-modal-action primary" id="btn-save-item">
+          <i class="fa-solid fa-floppy-disk"></i>
+          Save Item
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL 1B: MANAGE CATEGORIES (ADD, EDIT, DELETE)
+       ==================================================================== -->
+  <div class="modal-overlay" id="modal-categories">
+    <div class="modal-card" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fa-solid fa-layer-group" style="color: var(--primary-red);"></i>
+          Manage Categories
+        </h3>
+        <button class="btn-close-modal" id="btn-close-categories-modal">&times;</button>
+      </div>
+
+      <div class="modal-body" style="gap: 14px;">
+        <!-- Add New Category Box -->
+        <div class="add-category-box">
+          <label class="form-label" style="margin-bottom: 6px;">Create New Category</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="new-category-input" class="form-input" placeholder="e.g. Set Meals, Bento, Ramen..." style="flex: 1;">
+            <button type="button" class="btn-modal-action primary" id="btn-submit-new-category">
+              <i class="fa-solid fa-plus"></i> Add
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <label class="form-label" style="margin-bottom: 0;">Existing Categories</label>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Rename or delete categories</span>
+          </div>
+          
+          <!-- Scrollable Category List -->
+          <div class="category-manage-list" id="category-manage-list">
+            <!-- Dynamically populated category rows -->
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-modal-action primary" id="btn-close-categories-btn" style="width: 100%;">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL 2: EDIT CART ITEM NOTES & ADD-ONS
+       ==================================================================== -->
+  <div class="modal-overlay" id="modal-cart-note">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fa-solid fa-pen-nib" style="color: var(--accent-purple-light);"></i>
+          Item Notes & Customization
+        </h3>
+        <button class="btn-close-modal" id="btn-close-note-modal">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <h4 id="note-modal-item-name" style="color: var(--text-white); font-size: 1.1rem; margin-bottom: 4px;">Item Name</h4>
+        
+        <div class="form-group">
+          <label class="form-label">Special Instructions / Custom Request</label>
+          <input type="text" id="cart-item-note-input" class="form-input" placeholder="e.g. Less spicy, No onions, Extra sauce, Well done...">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Quick Tags / Common Requests:</label>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px;">
+            <button type="button" class="btn-tag-action quick-tag-btn" data-tag="Extra Spicy 🔥">Extra Spicy 🔥</button>
+            <button type="button" class="btn-tag-action quick-tag-btn" data-tag="Less Spicy">Less Spicy</button>
+            <button type="button" class="btn-tag-action quick-tag-btn" data-tag="No Onions 🧅">No Onions</button>
+            <button type="button" class="btn-tag-action quick-tag-btn" data-tag="Extra Sauce 🥣">Extra Sauce</button>
+            <button type="button" class="btn-tag-action quick-tag-btn" data-tag="Separate Sauce">Separate Sauce</button>
+            <button type="button" class="btn-tag-action quick-tag-btn" data-tag="Less Ice 🧊">Less Ice</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-modal-action" id="btn-cancel-note">Cancel</button>
+        <button class="btn-modal-action primary" id="btn-save-note">Apply Note</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL 3: PAYMENT REGISTER MODAL
+       ==================================================================== -->
+  <div class="modal-overlay" id="modal-payment">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fa-solid fa-cash-register" style="color: var(--primary-red);"></i>
+          Process Payment
+        </h3>
+        <button class="btn-close-modal" id="btn-close-payment-modal">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Due Amount -->
+        <div class="payment-summary-box">
+          <span class="payment-total-label">Total Amount Due</span>
+          <span class="payment-total-val" id="payment-due-val">₱0.00</span>
+        </div>
+
+        <!-- Payment Method Tabs -->
+        <div class="payment-method-tabs" id="payment-method-tabs">
+          <div class="payment-tab active" data-method="Cash">
+            <i class="fa-solid fa-money-bill-wave"></i>
+            Cash
+          </div>
+          <div class="payment-tab" data-method="GCash">
+            <i class="fa-solid fa-mobile-screen"></i>
+            GCash
+          </div>
+          <div class="payment-tab" data-method="Card">
+            <i class="fa-solid fa-credit-card"></i>
+            Card
+          </div>
+          <div class="payment-tab" data-method="QR PH">
+            <i class="fa-solid fa-qrcode"></i>
+            QR PH
+          </div>
+        </div>
+
+        <!-- Cash Details Container -->
+        <div id="cash-payment-section" style="display: flex; flex-direction: column; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label" for="cash-received-input">Cash Received (₱)</label>
+            <input type="number" id="cash-received-input" class="form-input" style="font-size: 1.3rem; font-weight: bold; text-align: center;" placeholder="0.00" min="0" step="1">
+          </div>
+
+          <!-- Quick Cash Bills -->
+          <div class="quick-cash-row">
+            <button class="btn-quick-cash" id="btn-cash-exact">Exact ₱</button>
+            <button class="btn-quick-cash" data-add="50">+₱50</button>
+            <button class="btn-quick-cash" data-add="100">+₱100</button>
+            <button class="btn-quick-cash" data-add="200">+₱200</button>
+            <button class="btn-quick-cash" data-add="500">+₱500</button>
+            <button class="btn-quick-cash" data-add="1000">+₱1000</button>
+          </div>
+
+          <!-- Change Box -->
+          <div class="change-display-box" id="change-display-box">
+            <span class="change-label">Change Due:</span>
+            <span class="change-val" id="payment-change-val">₱0.00</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-modal-action" id="btn-cancel-payment">Back to Cart</button>
+        <button class="btn-modal-action primary" id="btn-confirm-payment">
+          <i class="fa-solid fa-check"></i>
+          Complete & Print Receipt
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL 4: THERMAL RECEIPT MODAL
+       ==================================================================== -->
+  <div class="modal-overlay" id="modal-receipt">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="modal-header no-print">
+        <h3 class="modal-title">
+          <i class="fa-solid fa-receipt" style="color: var(--primary-red);"></i>
+          Order Receipt
+        </h3>
+        <button class="btn-close-modal" id="btn-close-receipt-modal">&times;</button>
+      </div>
+
+      <div class="modal-body" style="background: #E8E8E8; padding: 16px;">
+        <!-- Printable Receipt Sheet -->
+        <div class="receipt-paper" id="printable-receipt-area">
+          <div class="receipt-header">
+            <img src="assets/logo.png" alt="Logo" class="receipt-logo-img">
+            <div class="receipt-brand-name">YAMATO SHOKUDŌ</div>
+            <div class="receipt-info-text">Authentic Japanese Eats • Comfort Food</div>
+            <div class="receipt-info-text">Tel: +639124482693</div>
+            <div class="receipt-info-text">IG: @yamatoshokudo.ph</div>
+          </div>
+
+          <div class="receipt-divider"></div>
+
+          <div class="receipt-meta-row">
+            <span id="receipt-order-id">Order #0001</span>
+            <span id="receipt-date-time">2026-10-01 21:35</span>
+          </div>
+          <div class="receipt-meta-row">
+            <span id="receipt-dining-type">DINE IN (Table 1)</span>
+            <span id="receipt-pay-method">CASH</span>
+          </div>
+
+          <div class="receipt-divider"></div>
+
+          <!-- Items Table -->
+          <table class="receipt-items-table">
+            <thead>
+              <tr>
+                <th class="item-qty-col">QTY</th>
+                <th>ITEM</th>
+                <th class="item-amt-col">TOTAL</th>
+              </tr>
+            </thead>
+            <tbody id="receipt-items-body">
+              <!-- Dynamically populated rows -->
+            </tbody>
+          </table>
+
+          <div class="receipt-divider"></div>
+
+          <!-- Calculation Rows -->
+          <div class="receipt-calc-row">
+            <span>Subtotal:</span>
+            <span id="receipt-subtotal-val">₱0.00</span>
+          </div>
+          <div class="receipt-calc-row" id="receipt-discount-row">
+            <span>Discount:</span>
+            <span id="receipt-discount-val">-₱0.00</span>
+          </div>
+          <div class="receipt-calc-row grand-total">
+            <span>TOTAL DUE:</span>
+            <span id="receipt-total-val">₱0.00</span>
+          </div>
+          <div class="receipt-calc-row">
+            <span>Cash Tendered:</span>
+            <span id="receipt-tendered-val">₱0.00</span>
+          </div>
+          <div class="receipt-calc-row">
+            <span>Change:</span>
+            <span id="receipt-change-val">₱0.00</span>
+          </div>
+
+          <div class="receipt-divider"></div>
+
+          <div class="receipt-footer">
+            <div>*** ARIGATO GOZAIMASU! ***</div>
+            <div>Thank you for dining with Yamato Shokudo!</div>
+            <div class="receipt-barcode">||| | |||| ||| ||||| |||</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer no-print">
+        <button class="btn-modal-action" id="btn-view-orders-from-receipt" style="color: var(--accent-gold);">
+          <i class="fa-solid fa-bell-concierge"></i>
+          Active Orders
+        </button>
+        <button class="btn-modal-action" id="btn-new-order-from-receipt">
+          <i class="fa-solid fa-plus"></i>
+          New Sale
+        </button>
+        <button class="btn-modal-action primary" id="btn-print-receipt">
+          <i class="fa-solid fa-print"></i>
+          Print Receipt
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL: CURRENT / ACTIVE ORDERS (KITCHEN QUEUE & SERVING)
+       ==================================================================== -->
+  <div class="modal-overlay" id="modal-orders">
+    <div class="modal-card" style="max-width: 820px; width: 95%;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <h3 class="modal-title">
+            <i class="fa-solid fa-bell-concierge" style="color: var(--accent-gold);"></i>
+            Current Orders
+          </h3>
+          <span class="active-orders-modal-badge" id="active-orders-modal-badge">0 Active</span>
+        </div>
+        <button class="btn-close-modal" id="btn-close-orders-modal">&times;</button>
+      </div>
+
+      <div class="modal-body" style="max-height: 65vh; overflow-y: auto;">
+        <!-- Filter Tabs: Active Queue, Completed, Cancelled -->
+        <div class="orders-filter-row">
+          <button class="btn-tag-action active" id="filter-orders-active" data-filter="Pending">
+            <i class="fa-solid fa-clock"></i> Active Queue (<span id="count-filter-active">0</span>)
+          </button>
+          <button class="btn-tag-action" id="filter-orders-completed" data-filter="Completed">
+            <i class="fa-solid fa-check-double"></i> Completed (<span id="count-filter-completed">0</span>)
+          </button>
+          <button class="btn-tag-action" id="filter-orders-cancelled" data-filter="Cancelled">
+            <i class="fa-solid fa-ban"></i> Cancelled (<span id="count-filter-cancelled">0</span>)
+          </button>
+        </div>
+
+        <!-- Orders Cards Grid -->
+        <div class="active-orders-grid" id="active-orders-container">
+          <!-- Dynamically populated order queue cards -->
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-orders-view" id="empty-orders-view" style="display: none;">
+          <div class="empty-orders-icon">
+            <i class="fa-solid fa-clipboard-check"></i>
+          </div>
+          <h4 id="empty-orders-title">No Active Orders</h4>
+          <p id="empty-orders-desc">All caught up! New orders placed at checkout will appear here for preparation and serving.</p>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-modal-action" id="btn-open-history-from-orders">
+          <i class="fa-solid fa-chart-line" style="color: var(--accent-purple-light);"></i>
+          Sales Summary
+        </button>
+        <button class="btn-modal-action primary" id="btn-close-orders-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL 5: SALES ANALYTICS & ORDER HISTORY
+       ==================================================================== -->
+  <div class="modal-overlay" id="modal-history">
+    <div class="modal-card modal-history-card" style="max-width: 780px; width: 95%;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <h3 class="modal-title">
+            <i class="fa-solid fa-chart-line" style="color: var(--accent-purple-light);"></i>
+            Sales Dashboard & History
+          </h3>
+          <span class="active-orders-modal-badge" id="sales-history-range-badge" style="background: rgba(167, 139, 250, 0.15); color: var(--accent-purple-light); border-color: rgba(167, 139, 250, 0.3);">Today</span>
+        </div>
+        <button class="btn-close-modal" id="btn-close-history-modal">&times;</button>
+      </div>
+
+      <div class="modal-body modal-history-body">
+        <!-- Compact Date Filter & Range Section -->
+        <div class="sales-date-filter-section">
+          <div class="sales-date-presets-row">
+            <button type="button" class="btn-tag-action active" data-range-preset="today">Today</button>
+            <button type="button" class="btn-tag-action" data-range-preset="yesterday">Yesterday</button>
+            <button type="button" class="btn-tag-action" data-range-preset="7days">Last 7 Days</button>
+            <button type="button" class="btn-tag-action" data-range-preset="month">This Month</button>
+            <button type="button" class="btn-tag-action" data-range-preset="all">All Time</button>
+          </div>
+
+          <!-- Date Input Buttons & Dropdown Calendar Wrapper -->
+          <div class="sales-date-picker-wrapper">
+            <div class="sales-date-inputs-row">
+              <div class="date-picker-input-box" id="sales-start-date-btn" title="Click to choose start date">
+                <span class="date-input-label">Start</span>
+                <span class="date-input-val" id="sales-start-date-val">--</span>
+                <i class="fa-regular fa-calendar date-input-icon"></i>
+              </div>
+              <span class="date-range-arrow"><i class="fa-solid fa-arrow-right"></i></span>
+              <div class="date-picker-input-box" id="sales-end-date-btn" title="Click to choose end date">
+                <span class="date-input-label">End</span>
+                <span class="date-input-val" id="sales-end-date-val">--</span>
+                <i class="fa-regular fa-calendar date-input-icon"></i>
+              </div>
+              <button type="button" class="btn-reset-date-filter" id="btn-reset-date-filter" title="Reset date filter">
+                <i class="fa-solid fa-rotate-left"></i>
+              </button>
+            </div>
+
+            <!-- Interactive Calendar Dropdown Popup -->
+            <div class="sales-calendar-popup" id="sales-calendar-popup" style="display: none;">
+              <div class="cal-header">
+                <div class="cal-month-title-row">
+                  <span class="cal-month-title" id="cal-month-title">October 2026</span>
+                </div>
+                <div class="cal-nav-arrows">
+                  <button type="button" class="cal-nav-btn" id="cal-prev-month" title="Previous Month">
+                    <i class="fa-solid fa-chevron-left"></i>
+                  </button>
+                  <button type="button" class="cal-nav-btn" id="cal-next-month" title="Next Month">
+                    <i class="fa-solid fa-chevron-right"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Days of week: M T W T F S S (Matching Calendar Spec) -->
+              <div class="cal-weekdays-grid">
+                <span>M</span>
+                <span>T</span>
+                <span>W</span>
+                <span>T</span>
+                <span>F</span>
+                <span>S</span>
+                <span>S</span>
+              </div>
+
+              <!-- Days Grid -->
+              <div class="cal-days-grid" id="cal-days-grid">
+                <!-- Dynamically populated day cells -->
+              </div>
+
+              <div class="cal-popup-footer">
+                <div class="cal-selected-preview" id="cal-selected-preview">
+                  Select a start & end date
+                </div>
+                <div style="display: flex; gap: 6px;">
+                  <button type="button" class="btn-modal-action" style="padding: 4px 10px; font-size: 0.78rem; min-height: 28px;" id="btn-cal-cancel">Cancel</button>
+                  <button type="button" class="btn-modal-action primary" style="padding: 4px 12px; font-size: 0.78rem; min-height: 28px;" id="btn-cal-apply">Apply Range</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sleek Compact Analytics Ribbon / Cards -->
+        <div class="analytics-cards-row">
+          <div class="analytics-card">
+            <span class="analytics-card-label"><i class="fa-solid fa-coins" style="color: var(--primary-red);"></i> <span id="analytics-sales-label">Revenue</span></span>
+            <span class="analytics-card-val" id="analytics-total-sales" style="color: var(--primary-red-light);">₱0.00</span>
+          </div>
+          <div class="analytics-card">
+            <span class="analytics-card-label"><i class="fa-solid fa-receipt" style="color: var(--accent-gold);"></i> <span id="analytics-orders-label">Orders</span></span>
+            <span class="analytics-card-val" id="analytics-total-orders">0</span>
+          </div>
+          <div class="analytics-card">
+            <span class="analytics-card-label"><i class="fa-solid fa-chart-pie" style="color: var(--accent-purple-light);"></i> Avg Ticket</span>
+            <span class="analytics-card-val" id="analytics-avg-ticket">₱0.00</span>
+          </div>
+        </div>
+
+        <!-- Transactions Header Row -->
+        <div class="history-table-header-row">
+          <h4 style="color: var(--text-white); font-size: 0.88rem; margin: 0; display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-list-check" style="color: var(--text-muted); font-size: 0.8rem;"></i>
+            Transactions Log
+          </h4>
+          <span style="font-size: 0.72rem; color: var(--text-muted);" id="history-records-count">0 transactions</span>
+        </div>
+
+        <!-- Transactions Table -->
+        <div class="history-table-container">
+          <table class="history-table" id="sales-history-table">
+            <thead>
+              <tr>
+                <th>Order #</th>
+                <th>Time</th>
+                <th>Type</th>
+                <th>Method</th>
+                <th>Status</th>
+                <th>Total</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="history-table-body">
+              <!-- Dynamically populated sales history -->
+            </tbody>
+          </table>
+          <div class="empty-history-view" id="empty-history-view" style="display: none;">
+            <i class="fa-regular fa-calendar-xmark" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 6px;"></i>
+            <h4>No transactions in this date range</h4>
+            <p>Try selecting a different date range or tap "All Time".</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-modal-action" id="btn-export-sales-csv">
+          <i class="fa-solid fa-file-csv" style="color: var(--accent-green);"></i>
+          Export CSV
+        </button>
+        <button class="btn-modal-action" id="btn-reset-sales-history" style="color: var(--primary-red);">
+          <i class="fa-solid fa-trash-can"></i>
+          Clear History
+        </button>
+        <button class="btn-modal-action primary" id="btn-close-history-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL 6: TABLET / PC / APK INSTALLATION HELPER
+       ==================================================================== -->
+  <div class="modal-overlay" id="modal-install">
+    <div class="modal-card" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fa-solid fa-tablet-screen-button" style="color: var(--primary-red);"></i>
+          Install on Tablet, PC or Export APK
+        </h3>
+        <button class="btn-close-modal" id="btn-close-install-modal">&times;</button>
+      </div>
+
+      <div class="modal-body" style="gap: 16px;">
+        <div style="background: rgba(229, 37, 42, 0.1); border: 1px solid var(--primary-red); border-radius: var(--radius-md); padding: 14px;">
+          <h4 style="color: var(--primary-red-light); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-mobile-screen"></i>
+            1-Click Direct Install (Android Tablet, iPad, PC)
+          </h4>
+          <p style="font-size: 0.85rem; color: var(--text-secondary);">
+            This POS is a full Progressive Web App (PWA) with offline support. You can install it directly onto your Android tablet or Windows PC as a standalone app!
+          </p>
+          <button class="btn-modal-action primary" id="btn-trigger-pwa-install" style="margin-top: 10px; width: 100%;">
+            <i class="fa-solid fa-download"></i>
+            Install Yamato Shokudo App Now
+          </button>
+        </div>
+
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px;">
+          <h4 style="color: var(--text-white); margin-bottom: 6px;">
+            <i class="fa-brands fa-android" style="color: #3DDC84;"></i>
+            How to generate an Android APK file:
+          </h4>
+          <ol style="font-size: 0.82rem; color: var(--text-secondary); padding-left: 20px; line-height: 1.6;">
+            <li>Visit <strong>PWABuilder.com</strong> on any browser.</li>
+            <li>Input your POS URL or folder package (files include <code>manifest.json</code> and <code>sw.js</code> ready to go).</li>
+            <li>Click <strong>"Package for Android"</strong> to download a ready-to-install <code>.apk</code> for your tablet!</li>
+          </ol>
+        </div>
+
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px;">
+          <h4 style="color: var(--text-white); margin-bottom: 6px;">
+            <i class="fa-solid fa-rotate-left" style="color: var(--accent-purple-light);"></i>
+            Data Backup & Restore:
+          </h4>
+          <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 8px;">
+            Export or import your entire menu catalog and sales records anytime to transfer between devices.
+          </p>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-modal-action" id="btn-export-backup" style="flex: 1;">
+              <i class="fa-solid fa-file-export"></i> Backup (JSON)
+            </button>
+            <button class="btn-modal-action" id="btn-restore-default-menu" style="flex: 1;">
+              <i class="fa-solid fa-rotate"></i> Reset Default Menu
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-modal-action primary" id="btn-close-install-btn">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Main JavaScript App -->
+  <script src="app.js?v=20"></script>
+</body>
+</html>

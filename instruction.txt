@@ -1,0 +1,155 @@
+==============================================================================
+   🏮 YAMATO SHOKUDŌ - MULTI-DEVICE INSTRUCTIONS 🏮
+   Point of Sale (POS) System Guide for Android Tablets, iPads & PC
+   Theme: Clean Magenta & Cyber Purple Cyberpunk Edition
+==============================================================================
+
+Table of Contents:
+1. Running on Android Tablet / Android Phone (Over Wi-Fi)
+2. Installing as a Full-Screen Standalone App on Tablet
+3. Running on Windows PC (Desktop / Laptop / POS Terminal)
+4. Running on Apple iPad / iPhone (iOS)
+5. Converting to Standalone Android APK File (.apk)
+6. Using the POS (Adding Items, Changing Prices, Checkout & Thermal Receipts)
+7. Data Storage & CSV Export for Excel / Google Sheets
+8. How to Move This Project to Another Computer / Work Laptop
+
+==============================================================================
+1. RUNNING ON ANDROID TABLET / PHONE (Over Wi-Fi)
+==============================================================================
+
+To use your Android tablet as a wireless touch POS terminal:
+
+1. Make sure your PC and your Android tablet are connected to the SAME Wi-Fi network.
+2. On your PC, double-click "run_app.bat" (or run "python server.py").
+3. Look at the terminal window on the PC. It displays your local network IP, e.g.:
+   > On Tablet / Phone (Wi-Fi): http://192.168.1.50:8080
+4. Take your Android tablet, open Google Chrome, and type that exact address:
+   http://192.168.1.50:8080
+5. The Yamato Shokudo POS will instantly load on your tablet with touch-optimized buttons!
+
+==============================================================================
+2. INSTALLING AS A FULL-SCREEN STANDALONE APP ON TABLET (WebAPK)
+==============================================================================
+
+Once you open the POS in Chrome on your Android Tablet:
+
+1. Tap the three dots (⋮) in the top right corner of Chrome.
+2. Tap "Install app" or "Add to Home screen".
+3. Confirm the prompt: "Install Yamato Shokudo POS".
+4. The Yamato Shokudo icon will appear on your tablet's home screen.
+5. Tapping this icon opens the POS in full-screen mode like a native Android app 
+   (without browser address bars or navigation buttons).
+
+==============================================================================
+3. RUNNING ON WINDOWS PC (Desktop, Laptop, or Touchscreen Terminal)
+==============================================================================
+
+OPTION A: Quick 1-Click Launch (Easiest)
+----------------------------------------
+1. Open this folder on your computer.
+2. Double-click "run_app.bat".
+3. Your browser will automatically launch the POS at:
+   http://localhost:8080
+
+OPTION B: Manual Launch via Terminal
+------------------------------------
+1. Open PowerShell or Command Prompt in this folder.
+2. Type: python server.py
+3. Open your browser to: http://localhost:8080
+
+HOW TO INSTALL AS A DESKTOP APP ON PC:
+1. Open the POS in Google Chrome or Microsoft Edge.
+2. Click the "Install" icon in the address bar (or menu ⋮ > "Install Yamato Shokudo POS").
+3. The POS will run in its own dedicated, clean window with a desktop shortcut!
+
+==============================================================================
+4. RUNNING ON APPLE IPAD / IPHONE (iOS)
+==============================================================================
+
+1. Connect your iPad to the same Wi-Fi network as the PC running the POS server.
+2. Open Safari on your iPad.
+3. Type the network IP shown on your PC terminal (e.g., http://192.168.X.X:8080).
+4. Tap the "Share" button (square with an up arrow).
+5. Scroll down and tap "Add to Home Screen" > "Add".
+6. The POS icon will be placed on your iPad home screen.
+
+==============================================================================
+5. CONVERTING TO A STANDALONE ANDROID APK FILE (.apk)
+==============================================================================
+
+METHOD 1: PWABuilder (Fastest, 1-Click Online APK Generator)
+------------------------------------------------------------
+1. Upload or host the POS folder on any web hosting (e.g. GitHub Pages, Vercel, Netlify).
+2. Go to https://www.pwabuilder.com in your browser.
+3. Enter your POS website URL and click "Start".
+4. PWABuilder reads the included "manifest.json" and "sw.js" files automatically.
+5. Click "Package for Android" / "Build APK".
+6. Download the .apk file and install it directly on any Android tablet!
+
+==============================================================================
+6. HOW TO USE THE POS (KEY FEATURES)
+==============================================================================
+
+1. ADDING AN ITEM TO THE MENU:
+   - Click/tap "Add Item" in the top bar.
+   - Enter Dish Name (e.g. Ebi Tempura), Price (₱), Category, Description, and photo.
+   - Tap "Save Item".
+
+2. EDITING PRICES & MENU ITEMS:
+   - Tap "Edit Menu" in the top bar.
+   - Tap the pencil icon (Edit) on any dish card to change price or details in-place.
+   - Tap "Save Item", then tap "Exit Edit".
+
+3. TAKING AN ORDER:
+   - Tap any dish card to add it to the cart on the right.
+   - Use "+" and "−" to change quantities (updates instantly with no screen flicker).
+   - Tap "Note" to add special instructions (e.g. "Less Spicy", "No Onions", "Extra Sauce").
+   - Choose Dine In (with Table #), Take Out, or Delivery.
+   - Select discounts if applicable (Senior / PWD 20%, Promo 10%, etc.).
+
+4. PAYMENT & CHANGE:
+   - Tap "Charge ₱..." at the bottom of the cart.
+   - Choose payment method: Cash, GCash, Card, or QR PH.
+   - For Cash: Tap quick bill buttons (+₱50, +₱100, +₱500, +₱1000, or Exact ₱).
+   - Change is calculated automatically.
+   - Tap "Complete & Print Receipt".
+
+5. THERMAL RECEIPTS:
+   - Receipt modal appears in front with item breakdown, discounts, totals, and contact details.
+   - Tap "Print Receipt" to output to any standard 58mm or 80mm thermal receipt printer.
+
+==============================================================================
+7. DATA STORAGE & CSV EXPORT FOR GOOGLE SHEETS
+==============================================================================
+
+1. LOCAL PERSISTENCE:
+   - All menu catalog items, custom prices, and sales logs are saved automatically 
+     inside the device's LocalStorage database.
+   - Works 100% offline without needing an active internet connection.
+
+2. EXPORT TO CSV (FOR EXCEL & GOOGLE SHEETS):
+   - Tap "Sales" in the top navigation bar.
+   - Tap "Export CSV".
+   - A .csv file containing all order numbers, dates, times, dining types, payment 
+     methods, and sales amounts is downloaded to your device.
+   - You can open this file in Microsoft Excel or import it directly into Google Sheets!
+
+==============================================================================
+8. HOW TO MOVE THIS PROJECT TO ANOTHER COMPUTER / WORK LAPTOP
+==============================================================================
+
+To continue coding or running this POS system on another computer:
+
+1. COPY THE ENTIRE FOLDER:
+   - Simply copy the "JAI" folder to a USB flash drive or zip and email it.
+   - All code, images, and server scripts are 100% self-contained in this single folder.
+
+2. ON THE NEW COMPUTER:
+   - Windows: Double-click "run_app.bat".
+   - Mac / Linux: Run "bash run_app.sh" or "python3 server.py".
+   - Open in any code editor (VS Code, Cursor, etc.) to continue coding.
+
+==============================================================================
+  Arigato Gozaimasu! Thank you for using Yamato Shokudō POS! 🥢
+==============================================================================
