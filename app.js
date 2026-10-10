@@ -1215,14 +1215,18 @@ function openPaymentModal() {
   document.getElementById('payment-due-val').textContent = formatCurrency(grandTotal);
   
   const cashInput = document.getElementById('cash-received-input');
-  cashInput.value = grandTotal.toFixed(0);
+  if (cashInput) {
+    cashInput.value = ''; // Default to no amount to avoid confusion
+  }
   state.activePaymentMethod = 'Cash';
 
   updatePaymentTabsUI();
   calculatePaymentChange();
 
   document.getElementById('modal-payment').classList.add('active');
-  cashInput.focus();
+  if (cashInput) {
+    setTimeout(() => cashInput.focus(), 50);
+  }
 }
 
 function updatePaymentTabsUI() {
@@ -1244,17 +1248,64 @@ function updatePaymentTabsUI() {
 
 function calculatePaymentChange() {
   const { grandTotal } = calculateCartTotals();
-  const cashReceived = parseFloat(document.getElementById('cash-received-input').value) || 0;
-  const change = Math.max(0, cashReceived - grandTotal);
-  
+  const cashInput = document.getElementById('cash-received-input');
+  const cashRaw = cashInput ? cashInput.value.trim() : '';
+  const changeBox = document.getElementById('change-display-box');
+  const changeLabel = changeBox ? changeBox.querySelector('.change-label') : null;
   const changeDisplay = document.getElementById('payment-change-val');
-  changeDisplay.textContent = formatCurrency(change);
 
-  if (cashReceived < grandTotal && state.activePaymentMethod === 'Cash') {
-    changeDisplay.style.color = 'var(--primary-red)';
-    changeDisplay.textContent = 'Insufficient';
-  } else {
+  if (!changeDisplay) return;
+
+  if (state.activePaymentMethod !== 'Cash') {
+    if (changeLabel) {
+      changeLabel.textContent = 'Status:';
+      changeLabel.style.color = 'var(--accent-green)';
+    }
     changeDisplay.style.color = 'var(--accent-green)';
+    changeDisplay.textContent = 'Digital Verified';
+    if (changeBox) {
+      changeBox.style.background = 'rgba(16, 185, 129, 0.1)';
+      changeBox.style.borderColor = 'var(--accent-green)';
+    }
+    return;
+  }
+
+  // Cash payment mode
+  if (changeLabel) {
+    changeLabel.textContent = 'Change Due:';
+  }
+
+  if (cashRaw === '') {
+    // Default blank input: clean neutral presentation
+    if (changeLabel) changeLabel.style.color = 'var(--text-secondary)';
+    changeDisplay.style.color = 'var(--text-muted)';
+    changeDisplay.textContent = '₱0.00';
+    if (changeBox) {
+      changeBox.style.background = 'rgba(255, 255, 255, 0.03)';
+      changeBox.style.borderColor = 'var(--border-color)';
+    }
+    return;
+  }
+
+  const cashReceived = parseFloat(cashRaw);
+  if (isNaN(cashReceived) || cashReceived < grandTotal) {
+    const deficit = isNaN(cashReceived) ? grandTotal : (grandTotal - cashReceived);
+    if (changeLabel) changeLabel.style.color = 'var(--primary-red)';
+    changeDisplay.style.color = 'var(--primary-red)';
+    changeDisplay.textContent = `Short ₱${deficit.toFixed(2)}`;
+    if (changeBox) {
+      changeBox.style.background = 'rgba(230, 57, 70, 0.1)';
+      changeBox.style.borderColor = 'var(--primary-red)';
+    }
+  } else {
+    const change = cashReceived - grandTotal;
+    if (changeLabel) changeLabel.style.color = 'var(--accent-green)';
+    changeDisplay.style.color = 'var(--accent-green)';
+    changeDisplay.textContent = formatCurrency(change);
+    if (changeBox) {
+      changeBox.style.background = 'rgba(16, 185, 129, 0.1)';
+      changeBox.style.borderColor = 'var(--accent-green)';
+    }
   }
 }
 
@@ -1264,9 +1315,20 @@ function processPaymentSubmission() {
   let change = 0;
 
   if (state.activePaymentMethod === 'Cash') {
-    cashReceived = parseFloat(document.getElementById('cash-received-input').value) || 0;
-    if (cashReceived < grandTotal) {
-      alert(`Amount tendered (₱${cashReceived}) is less than total due (₱${grandTotal.toFixed(2)}).`);
+    const cashInput = document.getElementById('cash-received-input');
+    const cashRaw = cashInput ? cashInput.value.trim() : '';
+
+    if (cashRaw === '') {
+      showToast('Please enter cash received or tap Exact ₱', 'fa-circle-exclamation');
+      cashInput?.focus();
+      return;
+    }
+
+    cashReceived = parseFloat(cashRaw);
+    if (isNaN(cashReceived) || cashReceived < grandTotal) {
+      const tendered = isNaN(cashReceived) ? 0 : cashReceived;
+      showToast(`Amount tendered (${formatCurrency(tendered)}) is less than total due (${formatCurrency(grandTotal)})`, 'fa-circle-exclamation');
+      cashInput?.focus();
       return;
     }
     change = cashReceived - grandTotal;
@@ -2694,18 +2756,27 @@ function initEventListeners() {
 
   // Quick Cash Buttons
   document.getElementById('btn-cash-exact')?.addEventListener('click', () => {
+    AudioEngine.playTap();
     const { grandTotal } = calculateCartTotals();
-    document.getElementById('cash-received-input').value = grandTotal.toFixed(0);
-    calculatePaymentChange();
+    const cashInput = document.getElementById('cash-received-input');
+    if (cashInput) {
+      cashInput.value = grandTotal.toFixed(0);
+      calculatePaymentChange();
+      cashInput.focus();
+    }
   });
 
   document.querySelectorAll('.btn-quick-cash[data-add]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const addVal = parseFloat(btn.dataset.add);
+      AudioEngine.playTap();
+      const addVal = parseFloat(btn.dataset.add) || 0;
       const input = document.getElementById('cash-received-input');
-      const current = parseFloat(input.value) || 0;
-      input.value = (current + addVal).toFixed(0);
-      calculatePaymentChange();
+      if (input) {
+        const current = parseFloat(input.value) || 0;
+        input.value = (current + addVal).toFixed(0);
+        calculatePaymentChange();
+        input.focus();
+      }
     });
   });
 
