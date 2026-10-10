@@ -155,7 +155,7 @@ const DEFAULT_DISCOUNTS = [
 
 // Optional Pre-configured Default Google Sheets Webhook URL
 // (If you put your Webhook URL here, it will be automatically built-in for every new device/tablet installation)
-const DEFAULT_GSHEET_URL = '';
+const DEFAULT_GSHEET_URL = 'https://script.google.com/macros/s/AKfycbytQIVGsuv9v9WtPpVYK3X0wC36tiv4WIBtFwoMg_ORtfePrzmKqiQ-QBEyaz5GLYBEmA/exec';
 
 // App State
 class PosState {

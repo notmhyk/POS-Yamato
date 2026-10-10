@@ -4316,7 +4316,7 @@ input, button, select, textarea {
               <span>Google Apps Script Web App URL</span>
               <span style="font-size: 0.72rem; color: var(--text-muted);">(Endpoint /exec)</span>
             </label>
-            <input type="url" id="gsheet-webhook-input" class="form-input" placeholder="https://script.google.com/macros/s/.../exec" style="font-size: 0.82rem; font-family: monospace;">
+            <input type="url" id="gsheet-webhook-input" class="form-input" value="https://script.google.com/macros/s/AKfycbytQIVGsuv9v9WtPpVYK3X0wC36tiv4WIBtFwoMg_ORtfePrzmKqiQ-QBEyaz5GLYBEmA/exec" placeholder="https://script.google.com/macros/s/.../exec" style="font-size: 0.82rem; font-family: monospace;">
           </div>
 
           <!-- Auto-Sync Toggle Row -->
@@ -4596,7 +4596,7 @@ const DEFAULT_DISCOUNTS = [
 
 // Optional Pre-configured Default Google Sheets Webhook URL
 // (If you put your Webhook URL here, it will be automatically built-in for every new device/tablet installation)
-const DEFAULT_GSHEET_URL = '';
+const DEFAULT_GSHEET_URL = 'https://script.google.com/macros/s/AKfycbytQIVGsuv9v9WtPpVYK3X0wC36tiv4WIBtFwoMg_ORtfePrzmKqiQ-QBEyaz5GLYBEmA/exec';
 
 // App State
 class PosState {

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'yamato-pos-v29';
+const CACHE_NAME = 'yamato-pos-v30';
 const ASSETS = [
   './',
   './index.html',
