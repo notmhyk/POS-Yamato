@@ -1,4 +1,4 @@
-const CACHE_NAME = 'yamato-pos-v20';
+const CACHE_NAME = 'yamato-pos-v29';
 const ASSETS = [
   './',
   './index.html',
@@ -14,7 +14,12 @@ const ASSETS = [
   './assets/matcha_icecream.jpg',
   './assets/icon-192.png',
   './assets/icon-512.png',
-  './assets/favicon.png'
+  './assets/favicon.png',
+  './assets/fontawesome/css/all.min.css',
+  './assets/fontawesome/webfonts/fa-solid-900.woff2',
+  './assets/fontawesome/webfonts/fa-regular-400.woff2',
+  './assets/fontawesome/webfonts/fa-brands-400.woff2',
+  './assets/fonts/fonts.css'
 ];
 
 self.addEventListener('install', (event) => {

@@ -145,10 +145,19 @@ const DEFAULT_CATEGORIES = [
   'Specials'
 ];
 
+// Default Discounts & Promos
+const DEFAULT_DISCOUNTS = [
+  { id: 'disc-none', name: 'None', percent: 0 },
+  { id: 'disc-pwd', name: 'Senior / PWD', percent: 20 },
+  { id: 'disc-promo', name: 'Promo', percent: 10 },
+  { id: 'disc-vip', name: 'Loyalty / VIP', percent: 5 }
+];
+
 // App State
 class PosState {
   constructor() {
     this.customCategories = this.loadCategories();
+    this.customDiscounts = this.loadDiscounts();
     this.catalog = this.loadCatalog();
     this.cart = [];
     this.salesHistory = this.loadSalesHistory();
@@ -174,6 +183,29 @@ class PosState {
     this.calDraftStart = todayIso;
     this.calDraftEnd = todayIso;
     this.calPickingPhase = 'start';
+
+    // Google Sheets Live Sync State
+    this.gsheetUrl = localStorage.getItem('yamato_pos_gsheet_url') || '';
+    this.gsheetAutoSync = localStorage.getItem('yamato_pos_gsheet_autosync') !== 'false';
+    this.gsheetLastSync = localStorage.getItem('yamato_pos_gsheet_last_sync') || '';
+    this.syncedOrderIds = this.loadSyncedOrderIds();
+  }
+
+  loadSyncedOrderIds() {
+    const saved = localStorage.getItem('yamato_pos_synced_orders');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      } catch (e) {
+        console.error('Error loading synced order IDs:', e);
+      }
+    }
+    return [];
+  }
+
+  saveSyncedOrderIds() {
+    localStorage.setItem('yamato_pos_synced_orders', JSON.stringify(this.syncedOrderIds));
   }
 
   loadCategories() {
@@ -191,6 +223,23 @@ class PosState {
 
   saveCategories() {
     localStorage.setItem('yamato_pos_categories', JSON.stringify(this.customCategories));
+  }
+
+  loadDiscounts() {
+    const saved = localStorage.getItem('yamato_pos_discounts');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {
+        console.error('Error loading saved discounts:', e);
+      }
+    }
+    return [...DEFAULT_DISCOUNTS];
+  }
+
+  saveDiscounts() {
+    localStorage.setItem('yamato_pos_discounts', JSON.stringify(this.customDiscounts));
   }
 
   loadCatalog() {
@@ -377,11 +426,15 @@ function renderCatalog() {
     const isManage = state.manageMode;
 
     return `
-      <div class="dish-card" data-id="${item.id}">
+      <div class="dish-card ${isManage ? 'is-manage-mode' : ''}" data-id="${item.id}" ${isManage ? 'title="Click to edit item"' : ''}>
         <div class="dish-img-container">
           <img src="${item.img || 'assets/logo.png'}" alt="${escapeHtml(item.name)}" class="dish-img" onerror="this.src='assets/logo.png'">
           ${item.bestSeller ? '<div class="dish-badge-bestseller"><i class="fa-solid fa-star"></i> BEST SELLER</div>' : ''}
-          <div class="dish-cart-indicator ${inCartQty > 0 ? 'active' : ''}">${inCartQty}</div>
+          ${isManage ? `
+            <div class="dish-edit-banner"><i class="fa-solid fa-pen"></i> EDIT</div>
+          ` : `
+            <div class="dish-cart-indicator ${inCartQty > 0 ? 'active' : ''}">${inCartQty}</div>
+          `}
         </div>
 
         <div class="dish-details">
@@ -422,6 +475,19 @@ function renderCatalog() {
       const editBtn = e.target.closest('.edit-btn');
       const delBtn = e.target.closest('.del-btn');
       const id = card.dataset.id;
+
+      if (state.manageMode) {
+        // When in Edit Mode, prevent adding items to order/cart
+        if (delBtn) {
+          e.stopPropagation();
+          confirmDeleteItem(id);
+        } else {
+          // Clicking the edit button OR clicking the card itself opens the edit modal
+          e.stopPropagation();
+          openEditItemModal(id);
+        }
+        return;
+      }
 
       if (editBtn) {
         e.stopPropagation();
@@ -464,6 +530,9 @@ function clearAllItemBadges() {
 }
 
 function addToCart(itemId) {
+  // Prevent adding to order when in edit/manage mode
+  if (state.manageMode) return;
+
   const item = state.catalog.find(i => i.id === itemId);
   if (!item) return;
 
@@ -1018,11 +1087,114 @@ function saveCartNote() {
 }
 
 // ============================================================================
+// PROMOS & DISCOUNTS MANAGEMENT
+// ============================================================================
+function renderDiscountDropdown() {
+  const select = document.getElementById('discount-select');
+  if (!select) return;
+
+  const currentVal = state.discountPercent;
+  select.innerHTML = state.customDiscounts.map(disc => {
+    const isSelected = disc.percent === currentVal ? 'selected' : '';
+    const label = disc.percent === 0 ? `${disc.name} (0%)` : `${disc.name} (${disc.percent}%)`;
+    return `<option value="${disc.percent}" ${isSelected}>${escapeHtml(label)}</option>`;
+  }).join('');
+}
+
+function renderPromosModalList() {
+  const container = document.getElementById('promos-list-container');
+  if (!container) return;
+
+  container.innerHTML = state.customDiscounts.map(disc => {
+    const isNone = disc.percent === 0;
+    const badgeBg = isNone ? 'rgba(255, 255, 255, 0.08)' : 'rgba(16, 185, 129, 0.15)';
+    const badgeColor = isNone ? 'var(--text-muted)' : 'var(--accent-green)';
+    const badgeBorder = isNone ? 'var(--border-color)' : 'rgba(16, 185, 129, 0.3)';
+    const badgeText = isNone ? 'Default' : `${disc.percent}% OFF`;
+
+    const deleteBtnHtml = isNone ? '' : `
+      <button class="btn-card-action del-btn" onclick="deletePromo('${disc.id}')" title="Remove promo" style="width: 28px; height: 28px; font-size: 0.76rem;">
+        <i class="fa-solid fa-trash-can"></i>
+      </button>
+    `;
+
+    return `
+      <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px 12px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-weight: 700; color: #FFF; font-size: 0.88rem;">${escapeHtml(disc.name)}</span>
+          <span style="font-size: 0.72rem; font-weight: 800; background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${badgeBorder}; padding: 2px 7px; border-radius: var(--radius-full);">${badgeText}</span>
+        </div>
+        ${deleteBtnHtml}
+      </div>
+    `;
+  }).join('');
+}
+
+function addNewPromo() {
+  const nameInput = document.getElementById('new-promo-name');
+  const percentInput = document.getElementById('new-promo-percent');
+  const name = nameInput?.value.trim();
+  const percent = parseFloat(percentInput?.value);
+
+  if (!name) {
+    showToast('Please enter a promo name', 'fa-triangle-exclamation');
+    nameInput?.focus();
+    return;
+  }
+  if (isNaN(percent) || percent <= 0 || percent > 100) {
+    showToast('Enter a valid percentage (1 - 100%)', 'fa-triangle-exclamation');
+    percentInput?.focus();
+    return;
+  }
+
+  const newPromo = {
+    id: 'disc-' + Date.now(),
+    name,
+    percent
+  };
+
+  state.customDiscounts.push(newPromo);
+  state.saveDiscounts();
+  renderDiscountDropdown();
+  renderPromosModalList();
+
+  if (nameInput) nameInput.value = '';
+  if (percentInput) percentInput.value = '';
+
+  showToast(`Promo "${name}" (${percent}%) added!`, 'fa-circle-check');
+}
+
+window.deletePromo = function(promoId) {
+  const promo = state.customDiscounts.find(d => d.id === promoId);
+  if (!promo || promo.percent === 0) return;
+
+  if (confirm(`Remove promo "${promo.name}" (${promo.percent}%)?`)) {
+    AudioEngine.playDelete();
+    state.customDiscounts = state.customDiscounts.filter(d => d.id !== promoId);
+    state.saveDiscounts();
+    
+    if (state.discountPercent === promo.percent) {
+      state.discountPercent = 0;
+      renderCart();
+    }
+    
+    renderDiscountDropdown();
+    renderPromosModalList();
+    showToast(`Promo "${promo.name}" removed`, 'fa-trash');
+  }
+};
+
+// ============================================================================
 // PAYMENT & CHECKOUT PROCESSING
 // ============================================================================
 function openPaymentModal() {
   const { grandTotal } = calculateCartTotals();
   if (grandTotal <= 0 && state.cart.length === 0) return;
+
+  const cartPanel = document.getElementById('pos-cart-panel');
+  const backdrop = document.getElementById('cart-backdrop');
+  if (cartPanel) cartPanel.classList.remove('mobile-open');
+  if (backdrop) backdrop.classList.remove('active');
 
   document.getElementById('payment-due-val').textContent = formatCurrency(grandTotal);
   
@@ -1114,6 +1286,11 @@ function processPaymentSubmission() {
   state.saveSalesHistory();
   updateActiveOrdersBadge();
 
+  // Auto-sync to Google Sheet if enabled
+  if (state.gsheetUrl && state.gsheetAutoSync) {
+    syncOrderToGoogleSheet(orderRecord, true);
+  }
+
   // Play Register Chime
   AudioEngine.playChime();
 
@@ -1181,6 +1358,7 @@ function updateOrdersFilterUI() {
 
 function renderOrdersQueue() {
   updateActiveOrdersBadge();
+  updateOrdersFilterUI();
   const container = document.getElementById('active-orders-container');
   const emptyView = document.getElementById('empty-orders-view');
   const emptyTitle = document.getElementById('empty-orders-title');
@@ -1219,6 +1397,7 @@ function renderOrdersQueue() {
 
     const statusClass = isPending ? 'status-pending' : (isCompleted ? 'status-completed' : 'status-cancelled');
     const statusLabel = ord.status || 'Completed';
+    const totalQty = ord.items.reduce((sum, line) => sum + (line.qty || 1), 0);
 
     return `
       <div class="order-queue-card ${statusClass}" data-order-id="${ord.id}">
@@ -1227,6 +1406,7 @@ function renderOrdersQueue() {
             <span class="order-queue-number">${ord.orderNumber}</span>
             <span class="order-queue-type">
               <i class="fa-solid fa-utensils"></i> ${escapeHtml(ord.diningType)} (${escapeHtml(ord.tableNum || 'Counter')})
+              <span class="order-queue-qty-badge">${totalQty} item${totalQty !== 1 ? 's' : ''}</span>
             </span>
           </div>
           <div class="order-queue-status">
@@ -1235,23 +1415,17 @@ function renderOrdersQueue() {
           </div>
         </div>
 
-        <div class="order-queue-items">
-          ${ord.items.map(line => `
-            <div class="order-queue-item-row">
-              <span class="item-qty">${line.qty}x</span>
-              <span class="item-name">${escapeHtml(line.item.name)}</span>
-              ${line.note ? `<span class="item-note">(${escapeHtml(line.note)})</span>` : ''}
-              <span class="item-price">${formatCurrency(line.item.price * line.qty)}</span>
-            </div>
-          `).join('')}
-        </div>
-
-        <div class="order-queue-footer">
+        <div class="order-queue-summary-row">
           <div class="order-queue-total">
             <span>Total: <strong>${formatCurrency(ord.total)}</strong> <small>(${ord.paymentMethod})</small></span>
           </div>
+        </div>
 
+        <div class="order-queue-footer">
           <div class="order-queue-actions">
+            <button class="btn-order-action view" onclick="openOrderDetailsModal('${ord.id}')" title="View Full Order Details & Items">
+              <i class="fa-solid fa-eye"></i> View Order
+            </button>
             ${isPending ? `
               <button class="btn-order-action cancel" onclick="cancelOrder('${ord.id}')" title="Cancel order and subtract from sales">
                 <i class="fa-solid fa-xmark"></i> Cancel
@@ -1260,7 +1434,7 @@ function renderOrdersQueue() {
                 <i class="fa-solid fa-check"></i> Complete
               </button>
             ` : `
-              <button class="btn-order-action view" onclick="reprintOrder('${ord.id}')" title="View / Print Receipt">
+              <button class="btn-order-action receipt" onclick="reprintOrder('${ord.id}')" title="Print Thermal Receipt">
                 <i class="fa-solid fa-receipt"></i> Receipt
               </button>
             `}
@@ -1271,6 +1445,94 @@ function renderOrdersQueue() {
   }).join('');
 }
 
+window.openOrderDetailsModal = function(orderId) {
+  const order = state.salesHistory.find(o => o.id === orderId);
+  if (!order) return;
+
+  AudioEngine.playTap();
+
+  document.getElementById('order-details-title').textContent = `Order ${order.orderNumber}`;
+
+  const statusPill = document.getElementById('order-details-status-pill');
+  const isPending = order.status === 'Pending';
+  const isCompleted = order.status === 'Completed';
+  const statusClass = isPending ? 'status-pending' : (isCompleted ? 'status-completed' : 'status-cancelled');
+  if (statusPill) {
+    statusPill.className = `order-status-pill ${statusClass}`;
+    statusPill.textContent = order.status || 'Completed';
+  }
+
+  const diningEl = document.getElementById('order-details-dining');
+  if (diningEl) diningEl.textContent = `${order.diningType} (${order.tableNum || 'Counter'})`;
+
+  const dtEl = document.getElementById('order-details-datetime');
+  if (dtEl) dtEl.textContent = `${order.date} ${order.time}`;
+
+  const payEl = document.getElementById('order-details-payment');
+  if (payEl) payEl.textContent = order.paymentMethod;
+
+  const totalItemsCount = order.items.reduce((sum, i) => sum + (i.qty || 1), 0);
+  const countEl = document.getElementById('order-details-count');
+  if (countEl) countEl.textContent = `${totalItemsCount} item${totalItemsCount !== 1 ? 's' : ''}`;
+
+  const tbody = document.getElementById('order-details-items-body');
+  if (tbody) {
+    tbody.innerHTML = order.items.map(line => {
+      const lineTotal = line.item.price * line.qty;
+      return `
+        <tr>
+          <td class="item-qty-col"><strong style="color: var(--accent-gold);">${line.qty}x</strong></td>
+          <td>
+            <div class="order-detail-item-name">${escapeHtml(line.item.name)}</div>
+            ${line.note ? `<div class="order-detail-item-note"><i class="fa-solid fa-comment-dots"></i> ${escapeHtml(line.note)}</div>` : ''}
+          </td>
+          <td style="text-align: right; color: var(--text-secondary);">${formatCurrency(line.item.price)}</td>
+          <td style="text-align: right; font-weight: 700; color: #FFF;">${formatCurrency(lineTotal)}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  const subtotalEl = document.getElementById('order-details-subtotal');
+  if (subtotalEl) subtotalEl.textContent = formatCurrency(order.subtotal);
+
+  const discountRow = document.getElementById('order-details-discount-row');
+  const discountEl = document.getElementById('order-details-discount');
+  if (order.discountAmount > 0) {
+    if (discountRow) discountRow.style.display = 'flex';
+    if (discountEl) discountEl.textContent = `-${formatCurrency(order.discountAmount)} (${order.discountPercent}%)`;
+  } else {
+    if (discountRow) discountRow.style.display = 'none';
+  }
+
+  const totalEl = document.getElementById('order-details-total');
+  if (totalEl) totalEl.textContent = formatCurrency(order.total);
+
+  const tenderRow = document.getElementById('order-details-tender-row');
+  const changeRow = document.getElementById('order-details-change-row');
+  const tenderEl = document.getElementById('order-details-tendered');
+  const changeEl = document.getElementById('order-details-change');
+  if (order.cashReceived && order.cashReceived > 0) {
+    if (tenderRow) tenderRow.style.display = 'flex';
+    if (changeRow) changeRow.style.display = 'flex';
+    if (tenderEl) tenderEl.textContent = formatCurrency(order.cashReceived);
+    if (changeEl) changeEl.textContent = formatCurrency(order.change || 0);
+  } else {
+    if (tenderRow) tenderRow.style.display = 'none';
+    if (changeRow) changeRow.style.display = 'none';
+  }
+
+  const printBtn = document.getElementById('btn-print-from-order-details');
+  if (printBtn) {
+    printBtn.onclick = () => {
+      closeModals();
+      renderReceiptModal(order);
+    };
+  }
+
+  document.getElementById('modal-order-details')?.classList.add('active');
+};
+
 window.completeOrder = function(orderId) {
   const order = state.salesHistory.find(o => o.id === orderId);
   if (!order) return;
@@ -1278,6 +1540,11 @@ window.completeOrder = function(orderId) {
   AudioEngine.playTap();
   order.status = 'Completed';
   state.saveSalesHistory();
+
+  // Auto-sync to Google Sheet if enabled and not already synced
+  if (state.gsheetUrl && state.gsheetAutoSync && !state.syncedOrderIds.includes(order.id)) {
+    syncOrderToGoogleSheet(order, true);
+  }
 
   showToast(`Order ${order.orderNumber} Completed!`, 'fa-circle-check');
   updateActiveOrdersBadge();
@@ -1786,6 +2053,367 @@ function clearSalesHistory() {
 }
 
 // ============================================================================
+// GOOGLE SHEETS LIVE SYNC & APPS SCRIPT WEBHOOK ENGINE
+// ============================================================================
+const GOOGLE_APPS_SCRIPT_CODE = `/**
+ * ============================================================================
+ * YAMATO SHOKUDŌ POS - GOOGLE SHEETS LIVE SYNC SCRIPT
+ * ============================================================================
+ * Instructions:
+ * 1. Open your Google Sheet at sheets.google.com
+ * 2. Click 'Extensions' > 'Apps Script' in the top menu.
+ * 3. Delete any placeholder code, paste this entire script, and click Save (💾).
+ * 4. Click 'Deploy' > 'New deployment'.
+ * 5. Select type: 'Web app'.
+ * 6. Set Description: "Yamato POS Sync".
+ * 7. Set 'Execute as': 'Me' (your Google account).
+ * 8. Set 'Who has access': 'Anyone'.
+ * 9. Click 'Deploy', Authorize access, and COPY the Web App URL (ends in /exec).
+ * 10. In Yamato POS, open Sales > Sheets Sync, paste the URL, and tap 'Save URL'!
+ * ============================================================================
+ */
+
+function doGet(e) {
+  return ContentService.createTextOutput(JSON.stringify({
+    status: 'ok',
+    message: 'Yamato Shokudo POS Webhook is active and listening!'
+  })).setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    
+    // Auto-create header row if sheet is brand new or empty
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow([
+        "Order #",
+        "Date",
+        "Time",
+        "Dining Type",
+        "Table / Customer",
+        "Payment Method",
+        "Status",
+        "Items Summary",
+        "Subtotal",
+        "Discount (₱)",
+        "Discount %",
+        "Total (₱)",
+        "Cash Received (₱)",
+        "Change (₱)",
+        "Synced At"
+      ]);
+      sheet.getRange(1, 1, 1, 15).setFontWeight("bold").setBackground("#1C1B24").setFontColor("#FFFFFF");
+      sheet.setFrozenRows(1);
+    }
+    
+    var data = JSON.parse(e.postData.contents);
+    var timestamp = new Date().toLocaleString();
+    
+    if (data.action === "test") {
+      return ContentService.createTextOutput(JSON.stringify({
+        success: true,
+        message: "Connection test successful! Google Sheet is connected to Yamato POS."
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    if (data.action === "sync_order" && data.order) {
+      var ord = data.order;
+      var itemsSummary = (ord.items || []).map(function(item) {
+        var line = (item.qty || 1) + "x " + (item.item ? item.item.name : (item.name || "Item"));
+        if (item.note) line += " (" + item.note + ")";
+        return line;
+      }).join(", ");
+      
+      sheet.appendRow([
+        ord.orderNumber || "",
+        ord.date || "",
+        ord.time || "",
+        ord.diningType || "Dine In",
+        ord.tableNum || "",
+        ord.paymentMethod || "Cash",
+        ord.status || "Completed",
+        itemsSummary,
+        Number(ord.subtotal || 0),
+        Number(ord.discountAmount || 0),
+        Number(ord.discountPercent || 0),
+        Number(ord.total || 0),
+        Number(ord.cashReceived || 0),
+        Number(ord.change || 0),
+        timestamp
+      ]);
+      
+      return ContentService.createTextOutput(JSON.stringify({
+        success: true,
+        message: "Order " + ord.orderNumber + " synced successfully!"
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    if (data.action === "batch_sync" && data.orders && data.orders.length > 0) {
+      var rows = data.orders.map(function(ord) {
+        var itemsSummary = (ord.items || []).map(function(item) {
+          var line = (item.qty || 1) + "x " + (item.item ? item.item.name : (item.name || "Item"));
+          if (item.note) line += " (" + item.note + ")";
+          return line;
+        }).join(", ");
+        
+        return [
+          ord.orderNumber || "",
+          ord.date || "",
+          ord.time || "",
+          ord.diningType || "Dine In",
+          ord.tableNum || "",
+          ord.paymentMethod || "Cash",
+          ord.status || "Completed",
+          itemsSummary,
+          Number(ord.subtotal || 0),
+          Number(ord.discountAmount || 0),
+          Number(ord.discountPercent || 0),
+          Number(ord.total || 0),
+          Number(ord.cashReceived || 0),
+          Number(ord.change || 0),
+          timestamp
+        ];
+      });
+      
+      var startRow = sheet.getLastRow() + 1;
+      var range = sheet.getRange(startRow, 1, rows.length, 15);
+      range.setValues(rows);
+      
+      return ContentService.createTextOutput(JSON.stringify({
+        success: true,
+        message: "Successfully synced " + rows.length + " sales orders to Google Sheet!"
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      message: "Unknown action or missing order data."
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      error: err.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}`;
+
+async function sendToGoogleSheetWebhook(payload) {
+  if (!state.gsheetUrl) {
+    throw new Error('Google Sheets Webhook URL is not configured.');
+  }
+
+  return fetch(state.gsheetUrl, {
+    method: 'POST',
+    mode: 'no-cors',
+    cache: 'no-cache',
+    headers: {
+      'Content-Type': 'text/plain;charset=utf-8'
+    },
+    body: JSON.stringify(payload)
+  });
+}
+
+async function syncOrderToGoogleSheet(order, isAuto = false) {
+  if (!state.gsheetUrl) return false;
+
+  try {
+    await sendToGoogleSheetWebhook({
+      action: 'sync_order',
+      order: order
+    });
+
+    if (!state.syncedOrderIds.includes(order.id)) {
+      state.syncedOrderIds.push(order.id);
+      state.saveSyncedOrderIds();
+    }
+
+    const now = new Date();
+    state.gsheetLastSync = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ', ' + now.toLocaleDateString();
+    localStorage.setItem('yamato_pos_gsheet_last_sync', state.gsheetLastSync);
+
+    updateGoogleSheetsUI();
+    if (!isAuto) {
+      showToast(`Order ${order.orderNumber} synced to Google Sheets!`, 'fa-cloud-arrow-up');
+    }
+    return true;
+  } catch (err) {
+    console.warn('Google Sheet sync error (saved locally for later retry):', err);
+    if (!isAuto) {
+      showToast('Could not sync to Google Sheets (Offline/Error)', 'fa-triangle-exclamation');
+    }
+    updateGoogleSheetsUI();
+    return false;
+  }
+}
+
+async function batchSyncAllOrdersToGoogleSheets() {
+  if (!state.gsheetUrl) {
+    openGoogleSheetsModal();
+    showToast('Please configure Google Sheets Webhook URL first', 'fa-triangle-exclamation');
+    return;
+  }
+
+  const activeOrders = state.salesHistory.filter(o => o.status !== 'Cancelled');
+  if (activeOrders.length === 0) {
+    showToast('No sales records to sync', 'fa-info-circle');
+    return;
+  }
+
+  showToast(`Syncing ${activeOrders.length} sales to Google Sheets...`, 'fa-spinner');
+
+  try {
+    await sendToGoogleSheetWebhook({
+      action: 'batch_sync',
+      orders: activeOrders
+    });
+
+    activeOrders.forEach(ord => {
+      if (!state.syncedOrderIds.includes(ord.id)) {
+        state.syncedOrderIds.push(ord.id);
+      }
+    });
+    state.saveSyncedOrderIds();
+
+    const now = new Date();
+    state.gsheetLastSync = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ', ' + now.toLocaleDateString();
+    localStorage.setItem('yamato_pos_gsheet_last_sync', state.gsheetLastSync);
+
+    updateGoogleSheetsUI();
+    showToast(`Successfully synced ${activeOrders.length} sales to Google Sheet!`, 'fa-cloud-arrow-up');
+  } catch (err) {
+    console.error('Batch sync error:', err);
+    showToast('Failed to sync. Check Webhook URL & Internet', 'fa-triangle-exclamation');
+    updateGoogleSheetsUI();
+  }
+}
+
+async function testGoogleSheetsConnection() {
+  const urlInput = document.getElementById('gsheet-webhook-input');
+  const testUrl = urlInput ? urlInput.value.trim() : state.gsheetUrl;
+
+  if (!testUrl) {
+    showToast('Please enter a Google Apps Script URL', 'fa-triangle-exclamation');
+    urlInput?.focus();
+    return;
+  }
+
+  showToast('Testing Google Sheets connection...', 'fa-spinner');
+
+  try {
+    await fetch(testUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      cache: 'no-cache',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'test' })
+    });
+
+    state.gsheetUrl = testUrl;
+    localStorage.setItem('yamato_pos_gsheet_url', testUrl);
+
+    showToast('Google Sheets Webhook Connected!', 'fa-circle-check');
+    updateGoogleSheetsUI();
+  } catch (err) {
+    console.error('Test error:', err);
+    showToast('Connection failed. Verify URL & Internet', 'fa-triangle-exclamation');
+  }
+}
+
+function saveGoogleSheetsConfig() {
+  const urlInput = document.getElementById('gsheet-webhook-input');
+  const toggleInput = document.getElementById('gsheet-autosync-toggle');
+
+  if (urlInput) {
+    state.gsheetUrl = urlInput.value.trim();
+    localStorage.setItem('yamato_pos_gsheet_url', state.gsheetUrl);
+  }
+
+  if (toggleInput) {
+    state.gsheetAutoSync = toggleInput.checked;
+    localStorage.setItem('yamato_pos_gsheet_autosync', state.gsheetAutoSync ? 'true' : 'false');
+  }
+
+  updateGoogleSheetsUI();
+  showToast('Google Sheets settings saved!', 'fa-circle-check');
+}
+
+function updateGoogleSheetsUI() {
+  const badgeText = document.getElementById('gsheet-sync-status-badge-text');
+  const statusPill = document.getElementById('gsheet-status-pill');
+  const lastSyncEl = document.getElementById('gsheet-last-sync-time');
+  const queueCountEl = document.getElementById('gsheet-sync-queue-count');
+
+  const isConfigured = !!state.gsheetUrl;
+  const unsyncedCount = state.salesHistory.filter(o => o.status !== 'Cancelled' && !state.syncedOrderIds.includes(o.id)).length;
+
+  if (badgeText) {
+    if (!isConfigured) {
+      badgeText.textContent = 'Sheets Sync (Off)';
+    } else if (unsyncedCount > 0) {
+      badgeText.textContent = `Sync (${unsyncedCount} new)`;
+    } else {
+      badgeText.textContent = 'Sheets Synced';
+    }
+  }
+
+  if (statusPill) {
+    if (!isConfigured) {
+      statusPill.textContent = 'Not Configured';
+      statusPill.style.background = 'rgba(255, 255, 255, 0.08)';
+      statusPill.style.color = 'var(--text-muted)';
+      statusPill.style.borderColor = 'var(--border-color)';
+    } else if (state.gsheetAutoSync) {
+      statusPill.textContent = 'Auto-Sync Active';
+      statusPill.style.background = 'rgba(16, 185, 129, 0.15)';
+      statusPill.style.color = 'var(--accent-green)';
+      statusPill.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+    } else {
+      statusPill.textContent = 'Manual Sync';
+      statusPill.style.background = 'rgba(245, 158, 11, 0.15)';
+      statusPill.style.color = 'var(--accent-gold)';
+      statusPill.style.borderColor = 'rgba(245, 158, 11, 0.3)';
+    }
+  }
+
+  if (lastSyncEl) {
+    lastSyncEl.textContent = state.gsheetLastSync || 'Never';
+  }
+
+  if (queueCountEl) {
+    queueCountEl.textContent = `${unsyncedCount} Pending Sync`;
+    queueCountEl.style.color = unsyncedCount > 0 ? 'var(--accent-gold)' : 'var(--accent-green)';
+  }
+}
+
+function openGoogleSheetsModal() {
+  AudioEngine.playTap();
+  const urlInput = document.getElementById('gsheet-webhook-input');
+  const toggleInput = document.getElementById('gsheet-autosync-toggle');
+  const codeArea = document.getElementById('apps-script-code-template');
+
+  if (urlInput) urlInput.value = state.gsheetUrl || '';
+  if (toggleInput) toggleInput.checked = !!state.gsheetAutoSync;
+  if (codeArea) codeArea.value = GOOGLE_APPS_SCRIPT_CODE;
+
+  updateGoogleSheetsUI();
+  document.getElementById('modal-gsheet-sync')?.classList.add('active');
+}
+
+function copyGoogleAppsScript() {
+  const codeArea = document.getElementById('apps-script-code-template');
+  if (codeArea) {
+    codeArea.select();
+    navigator.clipboard.writeText(GOOGLE_APPS_SCRIPT_CODE).then(() => {
+      showToast('Google Apps Script copied to clipboard!', 'fa-copy');
+    }).catch(() => {
+      showToast('Script selected! Press Ctrl+C to copy', 'fa-copy');
+    });
+  }
+}
+
+// ============================================================================
 // MODAL MANAGEMENT & CLOSE
 // ============================================================================
 function closeModals() {
@@ -1934,10 +2562,25 @@ function initEventListeners() {
     state.tableNum = e.target.value;
   });
 
-  // Discount Select
+  // Discount Select & Promo Manager
   document.getElementById('discount-select')?.addEventListener('change', (e) => {
     state.discountPercent = parseFloat(e.target.value) || 0;
     renderCart();
+  });
+
+  document.getElementById('btn-manage-discounts')?.addEventListener('click', () => {
+    AudioEngine.playTap();
+    renderPromosModalList();
+    document.getElementById('modal-discounts')?.classList.add('active');
+  });
+  document.getElementById('btn-close-discounts-modal')?.addEventListener('click', closeModals);
+  document.getElementById('btn-close-discounts-btn')?.addEventListener('click', closeModals);
+  document.getElementById('btn-add-promo')?.addEventListener('click', addNewPromo);
+  document.getElementById('new-promo-percent')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') addNewPromo();
+  });
+  document.getElementById('new-promo-name')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('new-promo-percent')?.focus();
   });
 
   // Clear Cart
@@ -2009,18 +2652,31 @@ function initEventListeners() {
     document.getElementById('modal-history')?.classList.add('active');
   });
 
+  // Order Details Modal
+  const closeOrderDetails = () => {
+    document.getElementById('modal-order-details')?.classList.remove('active');
+  };
+  document.getElementById('btn-close-order-details-modal')?.addEventListener('click', closeOrderDetails);
+  document.getElementById('btn-close-order-details-btn')?.addEventListener('click', closeOrderDetails);
+  document.getElementById('modal-order-details')?.addEventListener('click', (e) => {
+    if (e.target.id === 'modal-order-details') closeOrderDetails();
+  });
+
   // Orders Filter Tabs
   document.getElementById('filter-orders-active')?.addEventListener('click', () => {
+    AudioEngine.playTap();
     state.ordersFilter = 'Pending';
     updateOrdersFilterUI();
     renderOrdersQueue();
   });
   document.getElementById('filter-orders-completed')?.addEventListener('click', () => {
+    AudioEngine.playTap();
     state.ordersFilter = 'Completed';
     updateOrdersFilterUI();
     renderOrdersQueue();
   });
   document.getElementById('filter-orders-cancelled')?.addEventListener('click', () => {
+    AudioEngine.playTap();
     state.ordersFilter = 'Cancelled';
     updateOrdersFilterUI();
     renderOrdersQueue();
@@ -2125,41 +2781,54 @@ function initEventListeners() {
     }
   });
 
-  // Install / APK modal
-  document.getElementById('btn-open-install')?.addEventListener('click', () => {
-    AudioEngine.playTap();
-    document.getElementById('modal-install').classList.add('active');
-  });
-  document.getElementById('btn-close-install-modal')?.addEventListener('click', closeModals);
-  document.getElementById('btn-close-install-btn')?.addEventListener('click', closeModals);
+  // Backup export listener
   document.getElementById('btn-export-backup')?.addEventListener('click', exportFullBackupJSON);
-  document.getElementById('btn-restore-default-menu')?.addEventListener('click', resetDefaultMenu);
 
-  // Mobile cart drawer toggle
-  document.getElementById('btn-mobile-cart-toggle')?.addEventListener('click', () => {
-    const cartPanel = document.getElementById('pos-cart-panel');
-    if (cartPanel) {
-      cartPanel.classList.toggle('mobile-open');
-    }
+  // Google Sheets Sync Listeners
+  document.getElementById('btn-open-gsheet-sync')?.addEventListener('click', () => {
+    openGoogleSheetsModal();
+  });
+  document.getElementById('btn-sync-google-sheets')?.addEventListener('click', () => {
+    batchSyncAllOrdersToGoogleSheets();
+  });
+  document.getElementById('btn-close-gsheet-modal')?.addEventListener('click', closeModals);
+  document.getElementById('btn-close-gsheet-btn')?.addEventListener('click', closeModals);
+  document.getElementById('btn-save-gsheet-config')?.addEventListener('click', saveGoogleSheetsConfig);
+  document.getElementById('btn-test-gsheet')?.addEventListener('click', testGoogleSheetsConnection);
+  document.getElementById('btn-sync-all-now')?.addEventListener('click', batchSyncAllOrdersToGoogleSheets);
+  document.getElementById('btn-copy-apps-script')?.addEventListener('click', copyGoogleAppsScript);
+  document.getElementById('gsheet-autosync-toggle')?.addEventListener('change', (e) => {
+    state.gsheetAutoSync = e.target.checked;
+    localStorage.setItem('yamato_pos_gsheet_autosync', state.gsheetAutoSync ? 'true' : 'false');
+    updateGoogleSheetsUI();
   });
 
-  // PWA Install Prompt Support
-  let deferredPrompt;
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    const installBtn = document.getElementById('btn-trigger-pwa-install');
-    if (installBtn) {
-      installBtn.style.display = 'block';
-      installBtn.addEventListener('click', async () => {
-        if (deferredPrompt) {
-          deferredPrompt.prompt();
-          const { outcome } = await deferredPrompt.userChoice;
-          console.log(`User choice: ${outcome}`);
-          deferredPrompt = null;
-        }
-      });
+  // Mobile / Tablet cart drawer toggle & backdrop
+  const toggleMobileCart = (forceState) => {
+    const cartPanel = document.getElementById('pos-cart-panel');
+    const backdrop = document.getElementById('cart-backdrop');
+    if (!cartPanel) return;
+    
+    const shouldOpen = typeof forceState === 'boolean' ? forceState : !cartPanel.classList.contains('mobile-open');
+    if (shouldOpen) {
+      cartPanel.classList.add('mobile-open');
+      backdrop?.classList.add('active');
+    } else {
+      cartPanel.classList.remove('mobile-open');
+      backdrop?.classList.remove('active');
     }
+  };
+
+  document.getElementById('btn-mobile-cart-toggle')?.addEventListener('click', () => {
+    AudioEngine.playTap();
+    toggleMobileCart();
+  });
+  document.getElementById('btn-close-mobile-cart')?.addEventListener('click', () => {
+    AudioEngine.playTap();
+    toggleMobileCart(false);
+  });
+  document.getElementById('cart-backdrop')?.addEventListener('click', () => {
+    toggleMobileCart(false);
   });
 
   // Register Service Worker for Offline POS Support
@@ -2177,8 +2846,10 @@ function initEventListeners() {
 // ============================================================================
 document.addEventListener('DOMContentLoaded', () => {
   renderCategoriesBar();
+  renderDiscountDropdown();
   renderCatalog();
   renderCart();
   updateActiveOrdersBadge();
+  updateGoogleSheetsUI();
   initEventListeners();
 });

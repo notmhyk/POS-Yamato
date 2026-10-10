@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#E5252A">
   <meta name="description" content="Yamato Shokudo Authentic Japanese Comfort Food - Point of Sale (POS) System">
   <link rel="manifest" href="manifest.json">
@@ -11,9 +11,9 @@
   
   <title>Yamato Shokudō POS</title>
 
-  <!-- Google Fonts & Font Awesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=20">
+  <!-- Google Fonts & Font Awesome Icons (100% Offline Local Bundle) -->
+  <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="style.css?v=29">
 </head>
 <body>
 
@@ -64,12 +64,6 @@
         <button class="btn-nav-action" id="btn-open-history" title="View Sales History & Reports">
           <i class="fa-solid fa-chart-line" style="color: var(--accent-purple-light);"></i>
           <span>Sales</span>
-        </button>
-
-        <!-- APK / Tablet Install Guide -->
-        <button class="btn-nav-action primary" id="btn-open-install" title="Install on Tablet / PC / APK">
-          <i class="fa-solid fa-tablet-screen-button"></i>
-          <span>App / APK</span>
         </button>
 
         <!-- Mobile Cart Open Button -->
@@ -124,10 +118,15 @@
               Current Order
               <span class="cart-count-badge" id="cart-items-count">0</span>
             </div>
-            <button class="btn-clear-cart" id="btn-clear-cart" title="Clear Cart">
-              <i class="fa-solid fa-trash-can"></i>
-              Clear
-            </button>
+            <div class="cart-title-actions">
+              <button class="btn-clear-cart" id="btn-clear-cart" title="Clear Cart">
+                <i class="fa-solid fa-trash-can"></i>
+                Clear
+              </button>
+              <button class="btn-close-mobile-cart" id="btn-close-mobile-cart" title="Close Cart">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
           </div>
 
           <!-- Order Config: Dine In / Take Out & Table -->
@@ -165,12 +164,12 @@
             <div class="billing-row discount-row">
               <div class="billing-discount-control">
                 <span>Discount:</span>
-                <select id="discount-select" class="discount-select">
-                  <option value="0">None (0%)</option>
-                  <option value="20">Senior / PWD (20%)</option>
-                  <option value="10">Promo (10%)</option>
-                  <option value="5">Loyalty (5%)</option>
+                <select id="discount-select" class="discount-select" title="Choose discount or promo">
+                  <!-- Dynamically populated from custom promos -->
                 </select>
+                <button type="button" class="btn-manage-discounts" id="btn-manage-discounts" title="Edit / Add / Remove Promos">
+                  <i class="fa-solid fa-gear"></i>
+                </button>
               </div>
               <span id="cart-discount-val">-₱0.00</span>
             </div>
@@ -186,6 +185,9 @@
           </button>
         </div>
       </section>
+
+      <!-- Mobile/Tablet Cart Drawer Backdrop -->
+      <div class="cart-backdrop" id="cart-backdrop"></div>
 
     </main>
 
@@ -445,7 +447,7 @@
        MODAL 4: THERMAL RECEIPT MODAL
        ==================================================================== -->
   <div class="modal-overlay" id="modal-receipt">
-    <div class="modal-card" style="max-width: 440px;">
+    <div class="modal-card modal-receipt-card" style="max-width: 480px; width: 95%;">
       <div class="modal-header no-print">
         <h3 class="modal-title">
           <i class="fa-solid fa-receipt" style="color: var(--primary-red);"></i>
@@ -526,7 +528,7 @@
         </div>
       </div>
 
-      <div class="modal-footer no-print">
+      <div class="modal-footer modal-receipt-footer no-print">
         <button class="btn-modal-action" id="btn-view-orders-from-receipt" style="color: var(--accent-gold);">
           <i class="fa-solid fa-bell-concierge"></i>
           Active Orders
@@ -599,17 +601,109 @@
   </div>
 
   <!-- ====================================================================
+       MODAL: ORDER DETAILS / VIEW ORDER
+       ==================================================================== -->
+  <div class="modal-overlay" id="modal-order-details">
+    <div class="modal-card" style="max-width: 540px; width: 95%;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <h3 class="modal-title">
+            <i class="fa-solid fa-file-invoice" style="color: var(--accent-gold);"></i>
+            <span id="order-details-title">Order Details</span>
+          </h3>
+          <span class="order-status-pill" id="order-details-status-pill">Completed</span>
+        </div>
+        <button class="btn-close-modal" id="btn-close-order-details-modal">&times;</button>
+      </div>
+
+      <div class="modal-body" style="gap: 12px; max-height: 70vh; overflow-y: auto;">
+        <!-- Meta info banner -->
+        <div class="order-details-meta-grid">
+          <div class="order-details-meta-item">
+            <span class="meta-label">Dining Type</span>
+            <span class="meta-val" id="order-details-dining">--</span>
+          </div>
+          <div class="order-details-meta-item">
+            <span class="meta-label">Date & Time</span>
+            <span class="meta-val" id="order-details-datetime">--</span>
+          </div>
+          <div class="order-details-meta-item">
+            <span class="meta-label">Payment Method</span>
+            <span class="meta-val" id="order-details-payment">--</span>
+          </div>
+          <div class="order-details-meta-item">
+            <span class="meta-label">Total Items</span>
+            <span class="meta-val" id="order-details-count">0 items</span>
+          </div>
+        </div>
+
+        <!-- Items Table -->
+        <div class="order-details-items-table-wrapper">
+          <table class="order-details-items-table">
+            <thead>
+              <tr>
+                <th style="width: 48px;">Qty</th>
+                <th>Item & Notes</th>
+                <th style="text-align: right; width: 85px;">Price</th>
+                <th style="text-align: right; width: 95px;">Total</th>
+              </tr>
+            </thead>
+            <tbody id="order-details-items-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Financial Summary -->
+        <div class="order-details-summary-box">
+          <div class="summary-line">
+            <span>Subtotal</span>
+            <span id="order-details-subtotal">₱0.00</span>
+          </div>
+          <div class="summary-line discount-line" id="order-details-discount-row" style="display: none;">
+            <span>Discount</span>
+            <span id="order-details-discount">-₱0.00</span>
+          </div>
+          <div class="summary-line total-line">
+            <span>Grand Total</span>
+            <span id="order-details-total">₱0.00</span>
+          </div>
+          <div class="summary-line tender-line" id="order-details-tender-row">
+            <span>Amount Tendered</span>
+            <span id="order-details-tendered">₱0.00</span>
+          </div>
+          <div class="summary-line tender-line" id="order-details-change-row">
+            <span>Change</span>
+            <span id="order-details-change">₱0.00</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-modal-action" id="btn-print-from-order-details">
+          <i class="fa-solid fa-receipt"></i> Print Receipt
+        </button>
+        <button class="btn-modal-action primary" id="btn-close-order-details-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
        MODAL 5: SALES ANALYTICS & ORDER HISTORY
        ==================================================================== -->
   <div class="modal-overlay" id="modal-history">
     <div class="modal-card modal-history-card" style="max-width: 780px; width: 95%;">
       <div class="modal-header">
-        <div style="display: flex; align-items: center; gap: 8px;">
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
           <h3 class="modal-title">
             <i class="fa-solid fa-chart-line" style="color: var(--accent-purple-light);"></i>
             Sales Dashboard & History
           </h3>
           <span class="active-orders-modal-badge" id="sales-history-range-badge" style="background: rgba(167, 139, 250, 0.15); color: var(--accent-purple-light); border-color: rgba(167, 139, 250, 0.3);">Today</span>
+          <button type="button" class="btn-tag-action" id="btn-open-gsheet-sync" title="Google Sheets Auto-Sync Settings" style="display: inline-flex; align-items: center; gap: 5px; border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.12); color: var(--accent-green); padding: 2px 8px; font-size: 0.72rem; min-height: 22px;">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <span id="gsheet-sync-status-badge-text">Sheets Sync</span>
+          </button>
         </div>
         <button class="btn-close-modal" id="btn-close-history-modal">&times;</button>
       </div>
@@ -740,10 +834,18 @@
         </div>
       </div>
 
-      <div class="modal-footer">
+      <div class="modal-footer" style="flex-wrap: wrap; gap: 6px;">
+        <button class="btn-modal-action" id="btn-sync-google-sheets" style="color: var(--accent-green); border-color: rgba(16, 185, 129, 0.4);">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          Sync to Sheets
+        </button>
         <button class="btn-modal-action" id="btn-export-sales-csv">
           <i class="fa-solid fa-file-csv" style="color: var(--accent-green);"></i>
           Export CSV
+        </button>
+        <button class="btn-modal-action" id="btn-export-backup" title="Export Backup JSON">
+          <i class="fa-solid fa-file-export" style="color: var(--accent-purple-light);"></i>
+          Backup JSON
         </button>
         <button class="btn-modal-action" id="btn-reset-sales-history" style="color: var(--primary-red);">
           <i class="fa-solid fa-trash-can"></i>
@@ -755,66 +857,146 @@
   </div>
 
   <!-- ====================================================================
-       MODAL 6: TABLET / PC / APK INSTALLATION HELPER
+       MODAL: GOOGLE SHEETS LIVE SYNC & SETTINGS
        ==================================================================== -->
-  <div class="modal-overlay" id="modal-install">
-    <div class="modal-card" style="max-width: 580px;">
+  <div class="modal-overlay" id="modal-gsheet-sync">
+    <div class="modal-card" style="max-width: 580px; width: 95%;">
       <div class="modal-header">
-        <h3 class="modal-title">
-          <i class="fa-solid fa-tablet-screen-button" style="color: var(--primary-red);"></i>
-          Install on Tablet, PC or Export APK
-        </h3>
-        <button class="btn-close-modal" id="btn-close-install-modal">&times;</button>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <h3 class="modal-title">
+            <i class="fa-solid fa-cloud-arrow-up" style="color: var(--accent-green);"></i>
+            Google Sheets Sync Mode
+          </h3>
+          <span class="active-orders-modal-badge" id="gsheet-status-pill" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-green); border-color: rgba(16, 185, 129, 0.3);">
+            Ready
+          </span>
+        </div>
+        <button class="btn-close-modal" id="btn-close-gsheet-modal">&times;</button>
       </div>
 
-      <div class="modal-body" style="gap: 16px;">
-        <div style="background: rgba(229, 37, 42, 0.1); border: 1px solid var(--primary-red); border-radius: var(--radius-md); padding: 14px;">
-          <h4 style="color: var(--primary-red-light); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-mobile-screen"></i>
-            1-Click Direct Install (Android Tablet, iPad, PC)
+      <div class="modal-body" style="gap: 14px; max-height: 75vh; overflow-y: auto;">
+        
+        <!-- Webhook Configuration Card -->
+        <div class="gsheet-card-box">
+          <div class="form-group" style="margin-bottom: 8px;">
+            <label class="form-label" for="gsheet-webhook-input">
+              <span>Google Apps Script Web App URL</span>
+              <span style="font-size: 0.72rem; color: var(--text-muted);">(Endpoint /exec)</span>
+            </label>
+            <input type="url" id="gsheet-webhook-input" class="form-input" placeholder="https://script.google.com/macros/s/.../exec" style="font-size: 0.82rem; font-family: monospace;">
+          </div>
+
+          <!-- Auto-Sync Toggle Row -->
+          <div class="gsheet-toggle-row">
+            <div class="toggle-info">
+              <span class="toggle-title">Auto-Sync Mode</span>
+              <span class="toggle-desc">Automatically upload sales record to your Google Sheet when an order is placed or completed</span>
+            </div>
+            <label class="custom-switch">
+              <input type="checkbox" id="gsheet-autosync-toggle" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- Action Buttons Row -->
+          <div class="gsheet-actions-row">
+            <button type="button" class="btn-modal-action" id="btn-test-gsheet" style="flex: 1; justify-content: center; font-size: 0.8rem;">
+              <i class="fa-solid fa-bolt"></i> Test Webhook
+            </button>
+            <button type="button" class="btn-modal-action" id="btn-save-gsheet-config" style="flex: 1; justify-content: center; font-size: 0.8rem; background: var(--bg-card-hover); border-color: var(--accent-green); color: var(--accent-green);">
+              <i class="fa-solid fa-floppy-disk"></i> Save URL
+            </button>
+            <button type="button" class="btn-modal-action primary" id="btn-sync-all-now" style="flex: 1.2; justify-content: center; font-size: 0.8rem;">
+              <i class="fa-solid fa-cloud-arrow-up"></i> Sync All Sales
+            </button>
+          </div>
+
+          <!-- Sync Log / Last Status Notice -->
+          <div id="gsheet-sync-notice" style="font-size: 0.74rem; color: var(--text-secondary); background: rgba(0,0,0,0.3); padding: 6px 10px; border-radius: var(--radius-sm); border: 1px dashed var(--border-color); display: flex; align-items: center; justify-content: space-between;">
+            <span><i class="fa-solid fa-clock-rotate-left"></i> Last Sync: <strong id="gsheet-last-sync-time">Never</strong></span>
+            <span id="gsheet-sync-queue-count" style="color: var(--accent-gold); font-weight: 700;">0 Pending</span>
+          </div>
+        </div>
+
+        <!-- Step-by-Step Instructions & Apps Script Code Box -->
+        <div class="gsheet-guide-box">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+            <h4 style="font-size: 0.84rem; color: #FFF; display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-book-open" style="color: var(--accent-gold);"></i>
+              How to setup your Google Sheet (1 Minute Setup)
+            </h4>
+            <button type="button" class="btn-copy-code" id="btn-copy-apps-script" title="Copy Apps Script Code">
+              <i class="fa-regular fa-copy"></i> Copy Script
+            </button>
+          </div>
+
+          <ol class="gsheet-setup-steps">
+            <li>Create a new spreadsheet at <strong>sheets.google.com</strong>.</li>
+            <li>Click <strong>Extensions &gt; Apps Script</strong> in the top menu.</li>
+            <li>Erase any code in the editor, paste the script below, and click <strong>Save</strong> (<i class="fa-regular fa-floppy-disk"></i>).</li>
+            <li>Click <strong>Deploy &gt; New deployment</strong>, select <strong>Web app</strong>.</li>
+            <li>Set <em>Execute as</em>: <strong>Me</strong> and <em>Who has access</em>: <strong>Anyone</strong>.</li>
+            <li>Click <strong>Deploy</strong>, grant permission, and paste the <strong>Web App URL</strong> above!</li>
+          </ol>
+
+          <!-- Code Snippet Area -->
+          <div class="gsheet-code-wrapper">
+            <textarea id="apps-script-code-template" class="gsheet-code-area" readonly spellcheck="false"></textarea>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-modal-action primary" id="btn-close-gsheet-btn" style="width: 100%; justify-content: center;">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL: MANAGE PROMOS & DISCOUNTS
+       ==================================================================== -->
+  <div class="modal-overlay" id="modal-discounts">
+    <div class="modal-card" style="max-width: 460px; width: 95%;">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fa-solid fa-percent" style="color: var(--accent-gold);"></i>
+          Manage Promos & Discounts
+        </h3>
+        <button class="btn-close-modal" id="btn-close-discounts-modal">&times;</button>
+      </div>
+
+      <div class="modal-body" style="gap: 14px; max-height: 75vh; overflow-y: auto;">
+        <!-- Add Promo Form -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+          <h4 style="font-size: 0.86rem; color: var(--text-white); display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-plus-circle" style="color: var(--primary-red);"></i> Add New Promo / Discount
           </h4>
-          <p style="font-size: 0.85rem; color: var(--text-secondary);">
-            This POS is a full Progressive Web App (PWA) with offline support. You can install it directly onto your Android tablet or Windows PC as a standalone app!
-          </p>
-          <button class="btn-modal-action primary" id="btn-trigger-pwa-install" style="margin-top: 10px; width: 100%;">
-            <i class="fa-solid fa-download"></i>
-            Install Yamato Shokudo App Now
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="new-promo-name" placeholder="Promo Name (e.g. Student, VIP)" style="flex: 2; height: 34px; padding: 6px 10px; font-size: 0.82rem; background: var(--bg-deep); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: #FFF; outline: none;">
+            <div style="position: relative; flex: 1; display: flex; align-items: center;">
+              <input type="number" id="new-promo-percent" placeholder="%" min="1" max="100" style="width: 100%; height: 34px; padding: 6px 20px 6px 8px; font-size: 0.82rem; background: var(--bg-deep); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: #FFF; outline: none;">
+              <span style="position: absolute; right: 8px; color: var(--text-muted); font-size: 0.8rem; pointer-events: none;">%</span>
+            </div>
+          </div>
+          <button type="button" class="btn-modal-action primary" id="btn-add-promo" style="min-height: 34px; width: 100%; justify-content: center; font-size: 0.82rem;">
+            <i class="fa-solid fa-plus"></i> Add Promo
           </button>
         </div>
 
-        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px;">
-          <h4 style="color: var(--text-white); margin-bottom: 6px;">
-            <i class="fa-brands fa-android" style="color: #3DDC84;"></i>
-            How to generate an Android APK file:
+        <!-- Active Promos List -->
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <h4 style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.4px;">
+            Active Promos & Discounts
           </h4>
-          <ol style="font-size: 0.82rem; color: var(--text-secondary); padding-left: 20px; line-height: 1.6;">
-            <li>Visit <strong>PWABuilder.com</strong> on any browser.</li>
-            <li>Input your POS URL or folder package (files include <code>manifest.json</code> and <code>sw.js</code> ready to go).</li>
-            <li>Click <strong>"Package for Android"</strong> to download a ready-to-install <code>.apk</code> for your tablet!</li>
-          </ol>
-        </div>
-
-        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px;">
-          <h4 style="color: var(--text-white); margin-bottom: 6px;">
-            <i class="fa-solid fa-rotate-left" style="color: var(--accent-purple-light);"></i>
-            Data Backup & Restore:
-          </h4>
-          <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 8px;">
-            Export or import your entire menu catalog and sales records anytime to transfer between devices.
-          </p>
-          <div style="display: flex; gap: 8px;">
-            <button class="btn-modal-action" id="btn-export-backup" style="flex: 1;">
-              <i class="fa-solid fa-file-export"></i> Backup (JSON)
-            </button>
-            <button class="btn-modal-action" id="btn-restore-default-menu" style="flex: 1;">
-              <i class="fa-solid fa-rotate"></i> Reset Default Menu
-            </button>
+          <div id="promos-list-container" style="display: flex; flex-direction: column; gap: 6px;">
+            <!-- Dynamically populated promo list items -->
           </div>
         </div>
       </div>
 
       <div class="modal-footer">
-        <button class="btn-modal-action primary" id="btn-close-install-btn">Got it</button>
+        <button class="btn-modal-action primary" id="btn-close-discounts-btn" style="width: 100%; justify-content: center;">Done</button>
       </div>
     </div>
   </div>
@@ -823,6 +1005,6 @@
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Main JavaScript App -->
-  <script src="app.js?v=20"></script>
+  <script src="app.js?v=29"></script>
 </body>
 </html>
