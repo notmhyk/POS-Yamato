@@ -4633,24 +4633,36 @@ class PosState {
     this.gsheetUrl = localStorage.getItem('yamato_pos_gsheet_url') || DEFAULT_GSHEET_URL || '';
     this.gsheetAutoSync = localStorage.getItem('yamato_pos_gsheet_autosync') !== 'false';
     this.gsheetLastSync = localStorage.getItem('yamato_pos_gsheet_last_sync') || '';
-    this.syncedOrderIds = this.loadSyncedOrderIds();
+    this.syncedOrdersMap = this.loadSyncedOrdersMap();
   }
 
-  loadSyncedOrderIds() {
-    const saved = localStorage.getItem('yamato_pos_synced_orders');
+  loadSyncedOrdersMap() {
+    const saved = localStorage.getItem('yamato_pos_synced_map');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
+        if (parsed && typeof parsed === 'object') return parsed;
       } catch (e) {
-        console.error('Error loading synced order IDs:', e);
+        console.error('Error loading synced orders map:', e);
       }
     }
-    return [];
+    // Backward compatibility with older synced array
+    const oldList = localStorage.getItem('yamato_pos_synced_orders');
+    if (oldList) {
+      try {
+        const arr = JSON.parse(oldList);
+        if (Array.isArray(arr)) {
+          const map = {};
+          arr.forEach(id => { map[id] = 'Completed'; });
+          return map;
+        }
+      } catch (e) {}
+    }
+    return {};
   }
 
-  saveSyncedOrderIds() {
-    localStorage.setItem('yamato_pos_synced_orders', JSON.stringify(this.syncedOrderIds));
+  saveSyncedOrdersMap() {
+    localStorage.setItem('yamato_pos_synced_map', JSON.stringify(this.syncedOrdersMap));
   }
 
   loadCategories() {
@@ -5988,8 +6000,8 @@ window.completeOrder = function(orderId) {
   order.status = 'Completed';
   state.saveSalesHistory();
 
-  // Auto-sync to Google Sheet if enabled and not already synced
-  if (state.gsheetUrl && state.gsheetAutoSync && !state.syncedOrderIds.includes(order.id)) {
+  // Auto-sync status update to Google Sheet if enabled
+  if (state.gsheetUrl && state.gsheetAutoSync) {
     syncOrderToGoogleSheet(order, true);
   }
 
@@ -5997,6 +6009,7 @@ window.completeOrder = function(orderId) {
   updateActiveOrdersBadge();
   renderOrdersQueue();
   renderSalesHistory();
+  updateGoogleSheetsUI();
 };
 
 window.cancelOrder = function(orderId) {
@@ -6014,10 +6027,16 @@ window.cancelOrder = function(orderId) {
   order.status = 'Cancelled';
   state.saveSalesHistory();
 
+  // Auto-sync cancellation to Google Sheet if enabled
+  if (state.gsheetUrl && state.gsheetAutoSync) {
+    syncOrderToGoogleSheet(order, true);
+  }
+
   showToast(`Order ${order.orderNumber} Cancelled (-${formatCurrency(order.total)})`, 'fa-ban');
   updateActiveOrdersBadge();
   renderOrdersQueue();
   renderSalesHistory();
+  updateGoogleSheetsUI();
 };
 
 // ============================================================================
@@ -6504,23 +6523,17 @@ function clearSalesHistory() {
 }
 
 // ============================================================================
-// GOOGLE SHEETS LIVE SYNC & APPS SCRIPT WEBHOOK ENGINE
+// GOOGLE SHEETS LIVE SYNC & APPS SCRIPT WEBHOOK ENGINE (v2.0 UPSERT)
 // ============================================================================
 const GOOGLE_APPS_SCRIPT_CODE = `/**
  * ============================================================================
- * YAMATO SHOKUDŌ POS - GOOGLE SHEETS LIVE SYNC SCRIPT
+ * YAMATO SHOKUDŌ POS - GOOGLE SHEETS LIVE SYNC SCRIPT (v2.0 UPSERT & ANTI-DUP)
  * ============================================================================
- * Instructions:
- * 1. Open your Google Sheet at sheets.google.com
- * 2. Click 'Extensions' > 'Apps Script' in the top menu.
- * 3. Delete any placeholder code, paste this entire script, and click Save (💾).
- * 4. Click 'Deploy' > 'New deployment'.
- * 5. Select type: 'Web app'.
- * 6. Set Description: "Yamato POS Sync".
- * 7. Set 'Execute as': 'Me' (your Google account).
- * 8. Set 'Who has access': 'Anyone'.
- * 9. Click 'Deploy', Authorize access, and COPY the Web App URL (ends in /exec).
- * 10. In Yamato POS, open Sales > Sheets Sync, paste the URL, and tap 'Save URL'!
+ * Features:
+ * - Smart Upsert: Automatically updates existing rows by Order # (no duplicate rows)
+ * - Real-time Status Sync: Updates Pending -> Completed -> Cancelled on the same row
+ * - Batch Deduplication: Batch sync only updates/inserts unique orders
+ * - Auto Header Creation: Generates formatted headers on new sheets
  * ============================================================================
  */
 
@@ -6568,16 +6581,19 @@ function doPost(e) {
       })).setMimeType(ContentService.MimeType.JSON);
     }
     
+    // SINGLE ORDER SYNC (UPSERT BY ORDER NUMBER)
     if (data.action === "sync_order" && data.order) {
       var ord = data.order;
+      var ordNum = String(ord.orderNumber || "").trim();
+      
       var itemsSummary = (ord.items || []).map(function(item) {
         var line = (item.qty || 1) + "x " + (item.item ? item.item.name : (item.name || "Item"));
         if (item.note) line += " (" + item.note + ")";
         return line;
       }).join(", ");
       
-      sheet.appendRow([
-        ord.orderNumber || "",
+      var rowData = [
+        ordNum,
         ord.date || "",
         ord.time || "",
         ord.diningType || "Dine In",
@@ -6592,24 +6608,69 @@ function doPost(e) {
         Number(ord.cashReceived || 0),
         Number(ord.change || 0),
         timestamp
-      ]);
+      ];
       
-      return ContentService.createTextOutput(JSON.stringify({
-        success: true,
-        message: "Order " + ord.orderNumber + " synced successfully!"
-      })).setMimeType(ContentService.MimeType.JSON);
+      // Check if Order # already exists in Column A
+      var existingRow = -1;
+      var lastRow = sheet.getLastRow();
+      if (lastRow > 1 && ordNum) {
+        var orderColValues = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+        for (var i = 0; i < orderColValues.length; i++) {
+          if (String(orderColValues[i][0]).trim() === ordNum) {
+            existingRow = i + 2; // 1-indexed sheet row (skipping header)
+            break;
+          }
+        }
+      }
+      
+      if (existingRow > 0) {
+        // Update existing row in place
+        sheet.getRange(existingRow, 1, 1, 15).setValues([rowData]);
+        return ContentService.createTextOutput(JSON.stringify({
+          success: true,
+          action: "updated",
+          row: existingRow,
+          message: "Order " + ordNum + " updated (Status: " + ord.status + ")!"
+        })).setMimeType(ContentService.MimeType.JSON);
+      } else {
+        // Append new row
+        sheet.appendRow(rowData);
+        return ContentService.createTextOutput(JSON.stringify({
+          success: true,
+          action: "created",
+          message: "Order " + ordNum + " added!"
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
     }
     
+    // BATCH SYNC (UPSERT & ANTI-DUPLICATION)
     if (data.action === "batch_sync" && data.orders && data.orders.length > 0) {
-      var rows = data.orders.map(function(ord) {
+      var lastRow = sheet.getLastRow();
+      var orderRowMap = {};
+      
+      if (lastRow > 1) {
+        var orderColValues = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+        for (var r = 0; r < orderColValues.length; r++) {
+          var existingNum = String(orderColValues[r][0]).trim();
+          if (existingNum) {
+            orderRowMap[existingNum] = r + 2; // 1-indexed sheet row
+          }
+        }
+      }
+      
+      var updatedCount = 0;
+      var newRows = [];
+      
+      data.orders.forEach(function(ord) {
+        var ordNum = String(ord.orderNumber || "").trim();
         var itemsSummary = (ord.items || []).map(function(item) {
           var line = (item.qty || 1) + "x " + (item.item ? item.item.name : (item.name || "Item"));
           if (item.note) line += " (" + item.note + ")";
           return line;
         }).join(", ");
         
-        return [
-          ord.orderNumber || "",
+        var rowData = [
+          ordNum,
           ord.date || "",
           ord.time || "",
           ord.diningType || "Dine In",
@@ -6625,15 +6686,29 @@ function doPost(e) {
           Number(ord.change || 0),
           timestamp
         ];
+        
+        if (ordNum && orderRowMap[ordNum]) {
+          // Update existing row
+          sheet.getRange(orderRowMap[ordNum], 1, 1, 15).setValues([rowData]);
+          updatedCount++;
+        } else {
+          // New row to append
+          newRows.push(rowData);
+          // Keep map updated for duplicates within the same batch payload
+          if (ordNum) orderRowMap[ordNum] = lastRow + newRows.length;
+        }
       });
       
-      var startRow = sheet.getLastRow() + 1;
-      var range = sheet.getRange(startRow, 1, rows.length, 15);
-      range.setValues(rows);
+      if (newRows.length > 0) {
+        var startRow = sheet.getLastRow() + 1;
+        sheet.getRange(startRow, 1, newRows.length, 15).setValues(newRows);
+      }
       
       return ContentService.createTextOutput(JSON.stringify({
         success: true,
-        message: "Successfully synced " + rows.length + " sales orders to Google Sheet!"
+        newCount: newRows.length,
+        updatedCount: updatedCount,
+        message: "Sync complete: " + newRows.length + " new orders added, " + updatedCount + " existing orders updated."
       })).setMimeType(ContentService.MimeType.JSON);
     }
     
@@ -6675,10 +6750,8 @@ async function syncOrderToGoogleSheet(order, isAuto = false) {
       order: order
     });
 
-    if (!state.syncedOrderIds.includes(order.id)) {
-      state.syncedOrderIds.push(order.id);
-      state.saveSyncedOrderIds();
-    }
+    state.syncedOrdersMap[order.id] = order.status;
+    state.saveSyncedOrdersMap();
 
     const now = new Date();
     state.gsheetLastSync = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ', ' + now.toLocaleDateString();
@@ -6686,7 +6759,7 @@ async function syncOrderToGoogleSheet(order, isAuto = false) {
 
     updateGoogleSheetsUI();
     if (!isAuto) {
-      showToast(`Order ${order.orderNumber} synced to Google Sheets!`, 'fa-cloud-arrow-up');
+      showToast(`Order ${order.orderNumber} synced (${order.status})!`, 'fa-cloud-arrow-up');
     }
     return true;
   } catch (err) {
@@ -6699,40 +6772,47 @@ async function syncOrderToGoogleSheet(order, isAuto = false) {
   }
 }
 
-async function batchSyncAllOrdersToGoogleSheets() {
+async function batchSyncAllOrdersToGoogleSheets(forceAll = false) {
   if (!state.gsheetUrl) {
     openGoogleSheetsModal();
     showToast('Please configure Google Sheets Webhook URL first', 'fa-triangle-exclamation');
     return;
   }
 
-  const activeOrders = state.salesHistory.filter(o => o.status !== 'Cancelled');
-  if (activeOrders.length === 0) {
+  const allOrders = state.salesHistory;
+  if (allOrders.length === 0) {
     showToast('No sales records to sync', 'fa-info-circle');
     return;
   }
 
-  showToast(`Syncing ${activeOrders.length} sales to Google Sheets...`, 'fa-spinner');
+  const unsyncedOrders = allOrders.filter(o => state.syncedOrdersMap[o.id] !== o.status);
+
+  if (!forceAll && unsyncedOrders.length === 0) {
+    showToast('All sales are already up-to-date in Google Sheets!', 'fa-circle-check');
+    return;
+  }
+
+  const ordersToSend = forceAll ? allOrders : (unsyncedOrders.length > 0 ? unsyncedOrders : allOrders);
+
+  showToast(`Syncing ${ordersToSend.length} orders to Google Sheets...`, 'fa-spinner');
 
   try {
     await sendToGoogleSheetWebhook({
       action: 'batch_sync',
-      orders: activeOrders
+      orders: ordersToSend
     });
 
-    activeOrders.forEach(ord => {
-      if (!state.syncedOrderIds.includes(ord.id)) {
-        state.syncedOrderIds.push(ord.id);
-      }
+    ordersToSend.forEach(ord => {
+      state.syncedOrdersMap[ord.id] = ord.status;
     });
-    state.saveSyncedOrderIds();
+    state.saveSyncedOrdersMap();
 
     const now = new Date();
     state.gsheetLastSync = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ', ' + now.toLocaleDateString();
     localStorage.setItem('yamato_pos_gsheet_last_sync', state.gsheetLastSync);
 
     updateGoogleSheetsUI();
-    showToast(`Successfully synced ${activeOrders.length} sales to Google Sheet!`, 'fa-cloud-arrow-up');
+    showToast(`Synced ${ordersToSend.length} orders to Google Sheet (Zero duplicates)!`, 'fa-cloud-arrow-up');
   } catch (err) {
     console.error('Batch sync error:', err);
     showToast('Failed to sync. Check Webhook URL & Internet', 'fa-triangle-exclamation');
@@ -6797,13 +6877,13 @@ function updateGoogleSheetsUI() {
   const queueCountEl = document.getElementById('gsheet-sync-queue-count');
 
   const isConfigured = !!state.gsheetUrl;
-  const unsyncedCount = state.salesHistory.filter(o => o.status !== 'Cancelled' && !state.syncedOrderIds.includes(o.id)).length;
+  const unsyncedCount = state.salesHistory.filter(o => state.syncedOrdersMap[o.id] !== o.status).length;
 
   if (badgeText) {
     if (!isConfigured) {
       badgeText.textContent = 'Sheets Sync (Off)';
     } else if (unsyncedCount > 0) {
-      badgeText.textContent = `Sync (${unsyncedCount} new)`;
+      badgeText.textContent = `Sync (${unsyncedCount} update${unsyncedCount > 1 ? 's' : ''})`;
     } else {
       badgeText.textContent = 'Sheets Synced';
     }
@@ -6833,7 +6913,7 @@ function updateGoogleSheetsUI() {
   }
 
   if (queueCountEl) {
-    queueCountEl.textContent = `${unsyncedCount} Pending Sync`;
+    queueCountEl.textContent = `${unsyncedCount} Pending Update${unsyncedCount === 1 ? '' : 's'}`;
     queueCountEl.style.color = unsyncedCount > 0 ? 'var(--accent-gold)' : 'var(--accent-green)';
   }
 }
