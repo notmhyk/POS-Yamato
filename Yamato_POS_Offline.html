@@ -4594,6 +4594,10 @@ const DEFAULT_DISCOUNTS = [
   { id: 'disc-vip', name: 'Loyalty / VIP', percent: 5 }
 ];
 
+// Optional Pre-configured Default Google Sheets Webhook URL
+// (If you put your Webhook URL here, it will be automatically built-in for every new device/tablet installation)
+const DEFAULT_GSHEET_URL = '';
+
 // App State
 class PosState {
   constructor() {
@@ -4625,8 +4629,8 @@ class PosState {
     this.calDraftEnd = todayIso;
     this.calPickingPhase = 'start';
 
-    // Google Sheets Live Sync State
-    this.gsheetUrl = localStorage.getItem('yamato_pos_gsheet_url') || '';
+    // Google Sheets Live Sync State (Checks localStorage first, then pre-configured default)
+    this.gsheetUrl = localStorage.getItem('yamato_pos_gsheet_url') || DEFAULT_GSHEET_URL || '';
     this.gsheetAutoSync = localStorage.getItem('yamato_pos_gsheet_autosync') !== 'false';
     this.gsheetLastSync = localStorage.getItem('yamato_pos_gsheet_last_sync') || '';
     this.syncedOrderIds = this.loadSyncedOrderIds();
