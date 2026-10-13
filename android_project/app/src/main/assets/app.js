@@ -171,6 +171,9 @@ class PosState {
     this.orderType = 'Dine In';
     this.tableNum = '';
     this.discountPercent = 0;
+    this.discountPromoId = null; // 'main-bowl-100' for Flat ₱100 promo on Main Bowls
+    this.discountType = 'percent'; // 'percent' or 'flat'
+    this.discountName = 'None';
     this.orderSeq = parseInt(localStorage.getItem('yamato_order_seq') || '101', 10);
     this.selectedItemForNote = null;
     this.activePaymentMethod = 'Cash';
@@ -606,11 +609,65 @@ function clearCart() {
   }
 }
 
+// ============================================================================
+// DAILY PROMO LOGIC (MAIN BOWLS FLAT ₱100 OFF - ONCE DAILY)
+// ============================================================================
+function getIsoTodayString() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function isMainBowlPromoUsedToday() {
+  const todayIso = getIsoTodayString();
+  const storedDate = localStorage.getItem('yamato_promo_main_bowl_date');
+  if (storedDate === todayIso) return true;
+
+  if (state && Array.isArray(state.salesHistory)) {
+    const found = state.salesHistory.find(o => {
+      if (o.status === 'Cancelled') return false;
+      const oDate = getOrderIsoDate(o);
+      return oDate === todayIso && (o.discountPromoId === 'main-bowl-100' || (o.discountName && o.discountName.includes('Main Bowl')));
+    });
+    if (found) return true;
+  }
+  return false;
+}
+
+function markMainBowlPromoUsed(orderNumber) {
+  const todayIso = getIsoTodayString();
+  localStorage.setItem('yamato_promo_main_bowl_date', todayIso);
+  localStorage.setItem('yamato_promo_main_bowl_order', orderNumber || '');
+  localStorage.setItem('yamato_promo_main_bowl_time', new Date().toISOString());
+}
+
+window.resetMainBowlPromoDailyFlag = function() {
+  localStorage.removeItem('yamato_promo_main_bowl_date');
+  localStorage.removeItem('yamato_promo_main_bowl_order');
+  localStorage.removeItem('yamato_promo_main_bowl_time');
+  renderDiscountDropdown();
+  renderPromosModalList();
+  renderCart();
+  showToast('Main Bowls Daily Promo reset! Ready to use today.', 'fa-circle-check');
+};
+
 function calculateCartTotals() {
   const subtotal = state.cart.reduce((sum, line) => sum + (line.item.price * line.qty), 0);
-  const discountAmount = (subtotal * (state.discountPercent / 100));
-  const grandTotal = Math.max(0, subtotal - discountAmount);
+  let discountAmount = 0;
 
+  if (state.discountPromoId === 'main-bowl-100') {
+    // Promo requires at least 1 Main Bowl dish in the cart
+    const hasMainBowl = state.cart.some(line => line.item.category === 'Main Bowls');
+    if (hasMainBowl) {
+      // Flat ₱100.00 deducted from the order total (e.g. 4 Torikatsu ₱640 - ₱100 = ₱540)
+      discountAmount = Math.min(subtotal, 100);
+    } else {
+      discountAmount = 0;
+    }
+  } else {
+    discountAmount = (subtotal * (state.discountPercent / 100));
+  }
+
+  const grandTotal = Math.max(0, subtotal - discountAmount);
   return { subtotal, discountAmount, grandTotal };
 }
 
@@ -631,7 +688,21 @@ function renderCart() {
   const { subtotal, discountAmount, grandTotal } = calculateCartTotals();
 
   if (subtotalDisplay) subtotalDisplay.textContent = formatCurrency(subtotal);
-  if (discountDisplay) discountDisplay.textContent = `-${formatCurrency(discountAmount)}`;
+  if (discountDisplay) {
+    if (state.discountPromoId === 'main-bowl-100') {
+      const hasMainBowl = state.cart.some(line => line.item.category === 'Main Bowls');
+      if (hasMainBowl) {
+        discountDisplay.textContent = `-${formatCurrency(discountAmount)}`;
+        discountDisplay.title = 'Main Bowls Promo: Flat ₱100.00 deducted from order';
+      } else {
+        discountDisplay.textContent = `-₱0.00 (Needs Main Bowl)`;
+        discountDisplay.title = 'Add at least 1 Main Bowl dish to cart to activate the ₱100 promo';
+      }
+    } else {
+      discountDisplay.textContent = `-${formatCurrency(discountAmount)}`;
+      discountDisplay.title = '';
+    }
+  }
   if (totalDisplay) totalDisplay.textContent = formatCurrency(grandTotal);
 
   if (checkoutBtn) {
@@ -1109,41 +1180,88 @@ function renderDiscountDropdown() {
   const select = document.getElementById('discount-select');
   if (!select) return;
 
-  const currentVal = state.discountPercent;
-  select.innerHTML = state.customDiscounts.map(disc => {
-    const isSelected = disc.percent === currentVal ? 'selected' : '';
+  const usedToday = isMainBowlPromoUsedToday();
+  const isCurrentMainBowl = state.discountPromoId === 'main-bowl-100';
+
+  let html = '';
+
+  // 1. Regular percentage discounts
+  html += state.customDiscounts.map(disc => {
+    const isSelected = (!state.discountPromoId && disc.percent === state.discountPercent) ? 'selected' : '';
     const label = disc.percent === 0 ? `${disc.name} (0%)` : `${disc.name} (${disc.percent}%)`;
     return `<option value="${disc.percent}" ${isSelected}>${escapeHtml(label)}</option>`;
   }).join('');
+
+  // 2. Main Bowls Flat ₱100 Promo (Daily Limited)
+  const promoLabel = usedToday 
+    ? '🔒 Main Bowls Promo (-₱100) [USED TODAY]' 
+    : '⭐ Main Bowls Promo (-₱100 Flat) [1x/Day]';
+  const promoDisabled = usedToday ? 'disabled' : '';
+  const promoSelected = (isCurrentMainBowl && !usedToday) ? 'selected' : '';
+
+  html += `<option value="main-bowl-100" ${promoSelected} ${promoDisabled} style="${usedToday ? 'color:#777; font-style:italic;' : 'color:var(--accent-gold); font-weight:bold;'}">${escapeHtml(promoLabel)}</option>`;
+
+  select.innerHTML = html;
 }
 
 function renderPromosModalList() {
   const container = document.getElementById('promos-list-container');
-  if (!container) return;
+  const dailyBox = document.getElementById('daily-promo-status-box');
+  const usedToday = isMainBowlPromoUsedToday();
+  const todayOrder = localStorage.getItem('yamato_promo_main_bowl_order');
 
-  container.innerHTML = state.customDiscounts.map(disc => {
-    const isNone = disc.percent === 0;
-    const badgeBg = isNone ? 'rgba(255, 255, 255, 0.08)' : 'rgba(16, 185, 129, 0.15)';
-    const badgeColor = isNone ? 'var(--text-muted)' : 'var(--accent-green)';
-    const badgeBorder = isNone ? 'var(--border-color)' : 'rgba(16, 185, 129, 0.3)';
-    const badgeText = isNone ? 'Default' : `${disc.percent}% OFF`;
+  if (dailyBox) {
+    const statusBadge = usedToday 
+      ? `<span style="font-size: 0.74rem; font-weight: 800; background: rgba(239, 68, 68, 0.15); color: #F87171; border: 1px solid rgba(239, 68, 68, 0.3); padding: 3px 8px; border-radius: var(--radius-full);">🔒 Used Today ${todayOrder ? `(${todayOrder})` : ''}</span>`
+      : `<span style="font-size: 0.74rem; font-weight: 800; background: rgba(16, 185, 129, 0.15); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 8px; border-radius: var(--radius-full);">🟢 Ready (1x Daily)</span>`;
 
-    const deleteBtnHtml = isNone ? '' : `
-      <button class="btn-card-action del-btn" onclick="deletePromo('${disc.id}')" title="Remove promo" style="width: 28px; height: 28px; font-size: 0.76rem;">
-        <i class="fa-solid fa-trash-can"></i>
-      </button>
-    `;
+    const resetActionBtn = usedToday
+      ? `<button type="button" onclick="resetMainBowlPromoDailyFlag()" class="btn-card-action" style="padding: 4px 10px; font-size: 0.74rem; background: rgba(229, 37, 42, 0.2); color: #FFF; border: 1px solid var(--primary-red); border-radius: 4px; cursor: pointer; white-space: nowrap;" title="Reset daily lock to test again">
+           <i class="fa-solid fa-rotate-left"></i> Reset Flag
+         </button>`
+      : '';
 
-    return `
-      <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px 12px;">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="font-weight: 700; color: #FFF; font-size: 0.88rem;">${escapeHtml(disc.name)}</span>
-          <span style="font-size: 0.72rem; font-weight: 800; background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${badgeBorder}; padding: 2px 7px; border-radius: var(--radius-full);">${badgeText}</span>
+    dailyBox.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-deep); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px 12px; gap: 8px;">
+        <div style="display: flex; flex-direction: column; gap: 3px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-weight: 800; color: #FFF; font-size: 0.88rem;">🍜 Main Bowls Flat ₱100 Promo</span>
+            ${statusBadge}
+          </div>
+          <span style="font-size: 0.72rem; color: var(--text-muted);">
+            Deducts flat ₱100 from the order total when the order contains Main Bowls (e.g. 4 Torikatsu ₱640 - ₱100 = ₱540). Limited to 1 use per day.
+          </span>
         </div>
-        ${deleteBtnHtml}
+        ${resetActionBtn}
       </div>
     `;
-  }).join('');
+  }
+
+  if (container) {
+    container.innerHTML = state.customDiscounts.map(disc => {
+      const isNone = disc.percent === 0;
+      const badgeBg = isNone ? 'rgba(255, 255, 255, 0.08)' : 'rgba(16, 185, 129, 0.15)';
+      const badgeColor = isNone ? 'var(--text-muted)' : 'var(--accent-green)';
+      const badgeBorder = isNone ? 'var(--border-color)' : 'rgba(16, 185, 129, 0.3)';
+      const badgeText = isNone ? 'Default' : `${disc.percent}% OFF`;
+
+      const deleteBtnHtml = isNone ? '' : `
+        <button class="btn-card-action del-btn" onclick="deletePromo('${disc.id}')" title="Remove promo" style="width: 28px; height: 28px; font-size: 0.76rem;">
+          <i class="fa-solid fa-trash-can"></i>
+        </button>
+      `;
+
+      return `
+        <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px 12px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-weight: 700; color: #FFF; font-size: 0.88rem;">${escapeHtml(disc.name)}</span>
+            <span style="font-size: 0.72rem; font-weight: 800; background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${badgeBorder}; padding: 2px 7px; border-radius: var(--radius-full);">${badgeText}</span>
+          </div>
+          ${deleteBtnHtml}
+        </div>
+      `;
+    }).join('');
+  }
 }
 
 function addNewPromo() {
@@ -1340,6 +1458,16 @@ function processPaymentSubmission() {
   const dateStr = now.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
+  // If Main Bowls ₱100 Promo was applied, mark it as used for today
+  if (state.discountPromoId === 'main-bowl-100' && discountAmount > 0) {
+    markMainBowlPromoUsed(orderNumber);
+  }
+
+  // Effective percentage for spreadsheets and legacy reports
+  const effectivePercent = state.discountType === 'flat' && subtotal > 0
+    ? Math.round((discountAmount / subtotal) * 100)
+    : state.discountPercent;
+
   const orderRecord = {
     id: 'ord-' + Date.now(),
     orderNumber,
@@ -1351,8 +1479,11 @@ function processPaymentSubmission() {
     tableNum: state.tableNum || 'Counter',
     items: JSON.parse(JSON.stringify(state.cart)),
     subtotal,
-    discountPercent: state.discountPercent,
+    discountPercent: effectivePercent,
     discountAmount,
+    discountPromoId: state.discountPromoId || null,
+    discountType: state.discountType || 'percent',
+    discountName: state.discountName || (discountAmount > 0 ? `${effectivePercent}% OFF` : 'None'),
     total: grandTotal,
     paymentMethod: state.activePaymentMethod,
     cashReceived,
@@ -1363,6 +1494,13 @@ function processPaymentSubmission() {
   state.salesHistory.unshift(orderRecord);
   state.saveSalesHistory();
   updateActiveOrdersBadge();
+
+  // Reset promo state for next order
+  state.discountPromoId = null;
+  state.discountType = 'percent';
+  state.discountPercent = 0;
+  state.discountName = 'None';
+  renderDiscountDropdown();
 
   // Auto-sync to Google Sheet if enabled
   if (state.gsheetUrl && state.gsheetAutoSync) {
@@ -1381,6 +1519,12 @@ function processPaymentSubmission() {
   renderCart();
   renderCatalog();
   showToast(`Order ${orderNumber} placed (${formatCurrency(grandTotal)})!`, 'fa-circle-check');
+
+  // Automatic print sequence: Customer receipt first, then Kitchen ticket
+  document.body.classList.remove('print-customer-only', 'print-kitchen-only');
+  setTimeout(() => {
+    window.print();
+  }, 400);
 }
 
 // ============================================================================
@@ -1649,6 +1793,23 @@ window.cancelOrder = function(orderId) {
     syncOrderToGoogleSheet(order, true);
   }
 
+  // If this cancelled order used the daily Main Bowl promo, restore availability if no other active order today
+  if (order.discountPromoId === 'main-bowl-100') {
+    const todayIso = getIsoTodayString();
+    const otherUsed = state.salesHistory.find(o => 
+      o.id !== order.id && 
+      o.status !== 'Cancelled' && 
+      getOrderIsoDate(o) === todayIso && 
+      o.discountPromoId === 'main-bowl-100'
+    );
+    if (!otherUsed) {
+      localStorage.removeItem('yamato_promo_main_bowl_date');
+      localStorage.removeItem('yamato_promo_main_bowl_order');
+      renderDiscountDropdown();
+      renderPromosModalList();
+    }
+  }
+
   showToast(`Order ${order.orderNumber} Cancelled (-${formatCurrency(order.total)})`, 'fa-ban');
   updateActiveOrdersBadge();
   renderOrdersQueue();
@@ -1657,44 +1818,92 @@ window.cancelOrder = function(orderId) {
 };
 
 // ============================================================================
-// THERMAL RECEIPT RENDERING & PRINTING
+// THERMAL RECEIPT RENDERING & PRINTING (CUSTOMER COPY + KITCHEN TICKET)
 // ============================================================================
 function renderReceiptModal(order) {
-  document.getElementById('receipt-order-id').textContent = `Order ${order.orderNumber}`;
-  document.getElementById('receipt-date-time').textContent = `${order.date} ${order.time}`;
-  document.getElementById('receipt-dining-type').textContent = `${order.diningType.toUpperCase()} (${order.tableNum})`;
-  document.getElementById('receipt-pay-method').textContent = order.paymentMethod.toUpperCase();
+  // 1. Populate Customer Slip (with financial details)
+  const orderIdEl = document.getElementById('receipt-order-id');
+  if (orderIdEl) orderIdEl.textContent = `Order ${order.orderNumber}`;
+
+  const dtEl = document.getElementById('receipt-date-time');
+  if (dtEl) dtEl.textContent = `${order.date} ${order.time}`;
+
+  const diningEl = document.getElementById('receipt-dining-type');
+  if (diningEl) diningEl.textContent = `${order.diningType.toUpperCase()} (${order.tableNum || 'Counter'})`;
+
+  const payEl = document.getElementById('receipt-pay-method');
+  if (payEl) payEl.textContent = order.paymentMethod.toUpperCase();
 
   const tbody = document.getElementById('receipt-items-body');
-  tbody.innerHTML = order.items.map(line => {
-    const lineTotal = line.item.price * line.qty;
-    return `
-      <tr>
-        <td class="item-qty-col">${line.qty}x</td>
-        <td>
-          ${escapeHtml(line.item.name)}
-          ${line.note ? `<br><small style="color:#555;">- ${escapeHtml(line.note)}</small>` : ''}
-        </td>
-        <td class="item-amt-col">${formatCurrency(lineTotal)}</td>
-      </tr>
-    `;
-  }).join('');
-
-  document.getElementById('receipt-subtotal-val').textContent = formatCurrency(order.subtotal);
-  
-  const discountRow = document.getElementById('receipt-discount-row');
-  if (order.discountAmount > 0) {
-    discountRow.style.display = 'flex';
-    document.getElementById('receipt-discount-val').textContent = `-${formatCurrency(order.discountAmount)} (${order.discountPercent}%)`;
-  } else {
-    discountRow.style.display = 'none';
+  if (tbody) {
+    tbody.innerHTML = order.items.map(line => {
+      const lineTotal = line.item.price * line.qty;
+      return `
+        <tr>
+          <td class="item-qty-col">${line.qty}x</td>
+          <td>
+            ${escapeHtml(line.item.name)}
+            ${line.note ? `<br><small style="color:#222; font-weight:700;">- ${escapeHtml(line.note)}</small>` : ''}
+          </td>
+          <td class="item-amt-col">${formatCurrency(lineTotal)}</td>
+        </tr>
+      `;
+    }).join('');
   }
 
-  document.getElementById('receipt-total-val').textContent = formatCurrency(order.total);
-  document.getElementById('receipt-tendered-val').textContent = formatCurrency(order.cashReceived);
-  document.getElementById('receipt-change-val').textContent = formatCurrency(order.change);
+  const subtotalEl = document.getElementById('receipt-subtotal-val');
+  if (subtotalEl) subtotalEl.textContent = formatCurrency(order.subtotal);
+  
+  const discountRow = document.getElementById('receipt-discount-row');
+  const discountValEl = document.getElementById('receipt-discount-val');
+  if (order.discountAmount > 0) {
+    if (discountRow) discountRow.style.display = 'flex';
+    const discLabel = order.discountName || (order.discountPercent ? `${order.discountPercent}%` : 'Promo');
+    if (discountValEl) discountValEl.textContent = `-${formatCurrency(order.discountAmount)} (${discLabel})`;
+  } else {
+    if (discountRow) discountRow.style.display = 'none';
+  }
 
-  document.getElementById('modal-receipt').classList.add('active');
+  const totalEl = document.getElementById('receipt-total-val');
+  if (totalEl) totalEl.textContent = formatCurrency(order.total);
+
+  const tenderedEl = document.getElementById('receipt-tendered-val');
+  if (tenderedEl) tenderedEl.textContent = formatCurrency(order.cashReceived);
+
+  const changeEl = document.getElementById('receipt-change-val');
+  if (changeEl) changeEl.textContent = formatCurrency(order.change);
+
+  // 2. Populate Kitchen Order Ticket (ZERO PRICES - QTY, DISH & NOTES ONLY)
+  const kitchenOrderId = document.getElementById('kitchen-order-id');
+  if (kitchenOrderId) kitchenOrderId.textContent = `ORDER ${order.orderNumber}`;
+
+  const kitchenDt = document.getElementById('kitchen-date-time');
+  if (kitchenDt) kitchenDt.textContent = `TIME: ${order.time} • ${order.date}`;
+
+  const kitchenDining = document.getElementById('kitchen-dining-type');
+  if (kitchenDining) kitchenDining.textContent = `${order.diningType.toUpperCase()} (${order.tableNum || 'Counter'})`;
+
+  const kitchenTbody = document.getElementById('kitchen-items-body');
+  if (kitchenTbody) {
+    let totalItems = 0;
+    kitchenTbody.innerHTML = order.items.map(line => {
+      totalItems += (line.qty || 1);
+      return `
+        <tr>
+          <td style="vertical-align: top; padding: 6px 0;"><span class="kitchen-qty-box">${line.qty}x</span></td>
+          <td style="vertical-align: top; padding: 6px 0;">
+            <span class="kitchen-item-name">${escapeHtml(line.item.name)}</span>
+            ${line.note ? `<div class="kitchen-item-note"><i class="fa-solid fa-pen-nib"></i> ${escapeHtml(line.note)}</div>` : ''}
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    const countEl = document.getElementById('kitchen-total-items-count');
+    if (countEl) countEl.textContent = `TOTAL ITEMS: ${totalItems}`;
+  }
+
+  document.getElementById('modal-receipt')?.classList.add('active');
 }
 
 // ============================================================================
@@ -2710,7 +2919,36 @@ function initEventListeners() {
 
   // Discount Select & Promo Manager
   document.getElementById('discount-select')?.addEventListener('change', (e) => {
-    state.discountPercent = parseFloat(e.target.value) || 0;
+    const val = e.target.value;
+    if (val === 'main-bowl-100') {
+      if (isMainBowlPromoUsedToday()) {
+        showToast('⚠️ Main Bowls Flat ₱100 Promo has already been used today! Available again tomorrow.', 'fa-lock');
+        state.discountPromoId = null;
+        state.discountType = 'percent';
+        state.discountPercent = 0;
+        state.discountName = 'None';
+        renderDiscountDropdown();
+        renderCart();
+        return;
+      }
+      state.discountPromoId = 'main-bowl-100';
+      state.discountType = 'flat';
+      state.discountPercent = 0;
+      state.discountName = 'Main Bowls Promo (-₱100)';
+
+      const hasMainBowl = state.cart.some(line => line.item.category === 'Main Bowls');
+      if (!hasMainBowl) {
+        showToast('🍜 Add at least 1 Main Bowl dish to cart to activate the ₱100 promo!', 'fa-bowl-rice');
+      } else {
+        showToast('⭐ Main Bowls Promo applied: Flat ₱100 deducted from total!', 'fa-tag');
+      }
+    } else {
+      state.discountPromoId = null;
+      state.discountType = 'percent';
+      state.discountPercent = parseFloat(val) || 0;
+      const matched = state.customDiscounts.find(d => d.percent === state.discountPercent);
+      state.discountName = matched ? matched.name : (state.discountPercent > 0 ? `${state.discountPercent}% OFF` : 'None');
+    }
     renderCart();
   });
 
@@ -2780,13 +3018,37 @@ function initEventListeners() {
     });
   });
 
-  // Receipt Modal actions
+  // Receipt Modal actions & Selective Printing (Customer Slip + Kitchen Ticket)
   document.getElementById('btn-close-receipt-modal')?.addEventListener('click', () => {
     document.getElementById('modal-receipt')?.classList.remove('active');
   });
+
+  // 1. Print Both (Default: Customer Receipt followed by Kitchen Ticket)
   document.getElementById('btn-print-receipt')?.addEventListener('click', () => {
+    document.body.classList.remove('print-customer-only', 'print-kitchen-only');
     window.print();
   });
+
+  // 2. Print Customer Slip Only
+  document.getElementById('btn-print-customer-only')?.addEventListener('click', () => {
+    document.body.classList.remove('print-kitchen-only');
+    document.body.classList.add('print-customer-only');
+    window.print();
+    setTimeout(() => document.body.classList.remove('print-customer-only'), 500);
+  });
+
+  // 3. Print Kitchen Ticket Only
+  document.getElementById('btn-print-kitchen-only')?.addEventListener('click', () => {
+    document.body.classList.remove('print-customer-only');
+    document.body.classList.add('print-kitchen-only');
+    window.print();
+    setTimeout(() => document.body.classList.remove('print-kitchen-only'), 500);
+  });
+
+  window.addEventListener('afterprint', () => {
+    document.body.classList.remove('print-customer-only', 'print-kitchen-only');
+  });
+
   document.getElementById('btn-new-order-from-receipt')?.addEventListener('click', () => {
     closeModals();
   });

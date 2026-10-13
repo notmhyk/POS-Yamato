@@ -1874,29 +1874,197 @@ input, button, select, textarea {
   margin-top: 4px;
 }
 
-/* Modal Receipt Footer - Perfectly Aligned 3-Button Row */
+/* Dual Receipt Slip Architecture (Customer Copy + Kitchen Ticket) */
+.receipt-paper {
+  max-width: 360px;
+}
+
+.receipt-slip {
+  padding: 4px 0;
+}
+
+.receipt-type-banner {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  background: #000;
+  color: #FFF;
+  padding: 2px 10px;
+  border-radius: 2px;
+  margin-top: 5px;
+}
+
+/* Cut / Tear Divider for Continuous Roll or Auto-Cutter */
+.receipt-cut-line {
+  margin: 18px 0;
+  text-align: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 0;
+  border-top: 1.5px dashed #333;
+  border-bottom: 1.5px dashed #333;
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.cut-line-label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #222;
+  text-transform: uppercase;
+}
+
+/* Kitchen Ticket Styles (Clean, High-Contrast, No Prices) */
+.kitchen-ticket-header {
+  text-align: center;
+  padding-bottom: 6px;
+}
+
+.kitchen-ticket-badge {
+  font-size: 0.85rem;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  background: #111;
+  color: #FFF;
+  padding: 3px 12px;
+  display: inline-block;
+  border-radius: 3px;
+  margin-bottom: 6px;
+}
+
+.kitchen-order-number {
+  font-size: 1.45rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: #000;
+  margin: 4px 0;
+}
+
+.kitchen-meta-pill {
+  display: inline-block;
+  font-size: 0.92rem;
+  font-weight: 900;
+  padding: 3px 12px;
+  border: 2px solid #000;
+  background: #FFF;
+  color: #000;
+  border-radius: 4px;
+  margin: 4px 0;
+  text-transform: uppercase;
+}
+
+.kitchen-meta-sub {
+  font-size: 0.75rem;
+  color: #333;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.receipt-divider.thick {
+  border-top: 2px solid #000;
+  margin: 8px 0;
+}
+
+.kitchen-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+}
+
+.kitchen-items-table th {
+  font-size: 0.76rem;
+  font-weight: 900;
+  border-bottom: 2px solid #000;
+  padding: 4px 0;
+  text-transform: uppercase;
+}
+
+.kitchen-items-table td {
+  padding: 6px 0;
+  border-bottom: 1px dashed #777;
+  vertical-align: top;
+}
+
+.kitchen-qty-box {
+  display: inline-block;
+  font-size: 1.05rem;
+  font-weight: 900;
+  background: #000;
+  color: #FFF;
+  padding: 2px 7px;
+  border-radius: 3px;
+  text-align: center;
+  min-width: 32px;
+}
+
+.kitchen-item-name {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #000;
+  display: block;
+}
+
+.kitchen-item-note {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #222;
+  margin-top: 2px;
+  background: #F0F0F0;
+  padding: 2px 6px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.kitchen-ticket-footer {
+  text-align: center;
+  margin-top: 10px;
+}
+
+#kitchen-total-items-count {
+  font-size: 0.88rem;
+  font-weight: 900;
+  color: #000;
+  margin-bottom: 3px;
+}
+
+.kitchen-footer-note {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #444;
+}
+
+/* Modal Receipt Footer - Flexible Multi-Button Layout */
 .modal-receipt-footer {
-  display: grid !important;
-  grid-template-columns: repeat(3, 1fr) !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
   gap: 8px !important;
   width: 100% !important;
   padding: 12px 14px !important;
 }
 
 .modal-receipt-footer .btn-modal-action {
-  width: 100% !important;
-  padding: 8px 8px !important;
-  font-size: 0.8rem !important;
+  flex: 1 1 calc(33.333% - 8px) !important;
+  min-width: 105px !important;
+  padding: 8px 6px !important;
+  font-size: 0.78rem !important;
   justify-content: center !important;
   min-height: 38px !important;
   margin: 0 !important;
   white-space: nowrap !important;
-  flex: 1 1 auto !important;
+}
+
+.modal-receipt-footer .btn-modal-action.primary {
+  flex: 2 1 calc(50% - 8px) !important;
+  font-weight: 800 !important;
 }
 
 @media (max-width: 480px) {
-  .modal-receipt-footer {
-    grid-template-columns: 1fr !important;
+  .modal-receipt-footer .btn-modal-action {
+    flex: 1 1 100% !important;
   }
 }
 
@@ -2854,26 +3022,108 @@ input, button, select, textarea {
 }
 
 /* ==========================================================================
-   PRINT SPECIFIC STYLES (Thermal Receipt)
+   PRINT SPECIFIC STYLES (Thermal Receipt: Customer Copy + Kitchen Copy)
+   Optimized for Standard 58mm / 80mm Roll & High-Contrast Yellow Thermal Paper
    ========================================================================== */
 @media print {
+  @page {
+    margin: 0;
+    size: auto;
+  }
+
+  body {
+    background: transparent !important;
+  }
+
   body * {
     visibility: hidden;
   }
+
   #printable-receipt-area, #printable-receipt-area * {
     visibility: visible;
   }
+
   #printable-receipt-area {
     position: absolute;
     left: 0;
     top: 0;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    background: #FFF !important;
-    color: #000 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 6px 4px !important;
+    background: transparent !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  /* High-Contrast pure black text & crisp lines for yellow thermal paper */
+  #printable-receipt-area,
+  #printable-receipt-area * {
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+    border-color: #000000 !important;
+    background-color: transparent !important;
     box-shadow: none !important;
   }
+
+  /* Keep badge & banner backgrounds dark black with white inverted text */
+  .receipt-type-banner,
+  .kitchen-ticket-badge,
+  .kitchen-qty-box {
+    background-color: #000000 !important;
+    color: #FFFFFF !important;
+    -webkit-text-fill-color: #FFFFFF !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .kitchen-meta-pill {
+    border: 2px solid #000000 !important;
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+  }
+
+  .receipt-slip {
+    width: 100% !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Auto-cutter / Tear separator between customer receipt and kitchen ticket */
+  .receipt-cut-line {
+    page-break-after: always !important;
+    break-after: page !important;
+    margin: 20px 0 !important;
+    padding: 10px 0 !important;
+    border-top: 2px dashed #000000 !important;
+    border-bottom: 2px dashed #000000 !important;
+  }
+
+  .kitchen-receipt-slip {
+    page-break-before: always !important;
+    break-before: page !important;
+    padding-top: 10px !important;
+  }
+
+  /* Selective Print Modes (when cashier chooses specific slip) */
+  body.print-customer-only .receipt-cut-line,
+  body.print-customer-only .kitchen-receipt-slip {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  body.print-kitchen-only .customer-receipt-slip,
+  body.print-kitchen-only .receipt-cut-line {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  body.print-kitchen-only .kitchen-receipt-slip {
+    page-break-before: auto !important;
+    break-before: auto !important;
+  }
+
   .modal-overlay, .modal-card {
     background: transparent !important;
     box-shadow: none !important;
@@ -2881,6 +3131,7 @@ input, button, select, textarea {
     inset: 0 !important;
     position: absolute !important;
   }
+
   .modal-header, .modal-footer, .no-print {
     display: none !important;
   }
