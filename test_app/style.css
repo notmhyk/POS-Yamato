@@ -2616,16 +2616,40 @@ input, button, select, textarea {
   box-shadow: 0 2px 12px rgba(239, 68, 68, 0.45);
 }
 
-.active-orders-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 10px;
+/* Fixed & Structured Current Orders Modal Card */
+.modal-orders-card {
+  width: 95% !important;
+  max-width: 860px !important;
+  height: 76vh !important;
+  min-height: 520px !important;
+  max-height: 86vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-sizing: border-box !important;
 }
 
-@media (max-width: 768px) {
-  .active-orders-grid {
-    grid-template-columns: 1fr;
-  }
+.orders-modal-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow-y: auto !important;
+  padding: 12px 16px !important;
+  gap: 12px !important;
+}
+
+.orders-modal-body .orders-filter-row {
+  flex-shrink: 0 !important;
+}
+
+.active-orders-grid {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  align-content: flex-start !important;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
 }
 
 .order-queue-card {
@@ -2972,12 +2996,16 @@ input, button, select, textarea {
 }
 
 .empty-orders-view {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 20px;
-  text-align: center;
+  flex: 1 1 auto !important;
+  min-height: 280px !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: auto 0 !important;
+  padding: 30px 20px !important;
+  text-align: center !important;
   color: var(--text-muted);
   gap: 10px;
 }
@@ -3313,8 +3341,12 @@ input, button, select, textarea {
   }
 }
 
-/* Tablet Portrait & Mobile Screens (<= 880px) */
-@media (max-width: 880px) {
+/* ==========================================================================
+   TABLET & MOBILE RESPONSIVE OPTIMIZATION
+   ========================================================================== */
+
+/* Universal Header & Utility Compact styling (<= 900px) */
+@media (max-width: 900px) {
   .pos-header {
     height: 48px;
     min-height: 48px;
@@ -3326,81 +3358,7 @@ input, button, select, textarea {
   .brand-tagline {
     display: none;
   }
-  .btn-mobile-cart-toggle {
-    display: flex !important;
-    width: 36px !important;
-    min-width: 36px !important;
-    height: 36px !important;
-    min-height: 36px !important;
-    position: relative;
-    padding: 0 !important;
-    justify-content: center !important;
-  }
-  .btn-mobile-cart-toggle #mobile-cart-badge {
-    position: absolute !important;
-    top: -4px !important;
-    right: -4px !important;
-    min-width: 18px !important;
-    height: 18px !important;
-    padding: 0 4px !important;
-    font-size: 0.65rem !important;
-    font-weight: 800 !important;
-    border-radius: var(--radius-full) !important;
-    background: var(--primary-red) !important;
-    color: #FFF !important;
-    border: 1.5px solid #FFF !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.7) !important;
-    line-height: 1 !important;
-    margin: 0 !important;
-  }
-  .pos-body {
-    grid-template-columns: 1fr;
-  }
-  .pos-catalog-panel {
-    border-right: none;
-    padding: 8px 10px;
-  }
-  .items-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 8px;
-  }
-  .dish-card {
-    height: 175px;
-    max-height: 180px;
-  }
-  .dish-img-container {
-    height: 80px;
-    min-height: 80px;
-  }
-  .dish-desc {
-    display: none !important;
-  }
 
-  /* Cart Slide-Over Drawer for Tablet Portrait & Mobile */
-  .pos-cart-panel {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 88vw;
-    max-width: 400px;
-    height: 100vh;
-    height: 100dvh;
-    z-index: 1500;
-    box-shadow: -10px 0 35px rgba(0, 0, 0, 0.9);
-    transform: translateX(105%);
-    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-    border-left: 1px solid var(--border-color);
-  }
-  .pos-cart-panel.mobile-open {
-    transform: translateX(0);
-  }
-  .btn-close-mobile-cart {
-    display: flex !important;
-  }
   /* Sales Date Filter & Range in Portrait Tablet & Mobile - Zero Overlap */
   .sales-date-filter-section {
     flex-direction: column !important;
@@ -3457,6 +3415,204 @@ input, button, select, textarea {
     transform: translateX(-50%) !important;
     width: 310px !important;
     max-width: calc(100vw - 32px) !important;
+  }
+}
+
+/* Tablet Flexible Portrait Screens (641px - 900px) */
+@media (min-width: 641px) and (max-width: 900px) {
+  /* Current Orders Modal: Fixed & Structured in Tablet Portrait */
+  .modal-orders-card {
+    width: 96% !important;
+    max-width: 96% !important;
+    height: 82vh !important;
+    min-height: 540px !important;
+    max-height: 90vh !important;
+  }
+
+  .orders-modal-body {
+    padding: 10px 12px !important;
+    gap: 10px !important;
+  }
+
+  .orders-modal-body .active-orders-grid {
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  /* POS Workspace Split Layout for Tablet Portrait: FIXED Cart Sidebar */
+  .pos-body {
+    grid-template-columns: 1fr 295px !important;
+    height: calc(100vh - 48px) !important;
+    height: calc(100dvh - 48px) !important;
+  }
+
+  .pos-catalog-panel {
+    padding: 8px 10px !important;
+    gap: 8px !important;
+    border-right: 1px solid var(--border-color) !important;
+  }
+
+  .items-grid {
+    grid-template-columns: repeat(auto-fill, minmax(135px, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .dish-card {
+    height: 175px !important;
+    max-height: 180px !important;
+  }
+
+  .dish-img-container {
+    height: 80px !important;
+    min-height: 80px !important;
+  }
+
+  .dish-desc {
+    display: none !important;
+  }
+
+  /* Current Order Ticket Panel: FIXED ON SCREEN in Tablet Portrait */
+  .pos-cart-panel {
+    position: relative !important;
+    transform: none !important;
+    width: 295px !important;
+    min-width: 295px !important;
+    max-width: 295px !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    z-index: 10 !important;
+    box-shadow: none !important;
+    border-left: 1px solid var(--border-color) !important;
+  }
+
+  .btn-close-mobile-cart {
+    display: none !important;
+  }
+
+  .btn-mobile-cart-toggle {
+    display: none !important;
+  }
+
+  .cart-header {
+    padding: 10px 12px !important;
+    gap: 8px !important;
+  }
+
+  .order-type-select {
+    flex: 0 0 100px !important;
+    font-size: 0.78rem !important;
+    padding: 4px 6px !important;
+  }
+
+  .table-num-input {
+    font-size: 0.78rem !important;
+    padding: 4px 8px !important;
+  }
+
+  .cart-items-list {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    padding: 6px 8px !important;
+    gap: 6px !important;
+  }
+
+  .empty-cart-view {
+    flex: 1 1 auto !important;
+    min-height: 220px !important;
+    height: 100% !important;
+    padding: 20px 12px !important;
+  }
+
+  .cart-footer {
+    padding: 8px 10px !important;
+    gap: 6px !important;
+  }
+}
+
+/* Mobile Screens Only (<= 640px) */
+@media (max-width: 640px) {
+  .btn-mobile-cart-toggle {
+    display: flex !important;
+    width: 36px !important;
+    min-width: 36px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    position: relative;
+    padding: 0 !important;
+    justify-content: center !important;
+  }
+  .btn-mobile-cart-toggle #mobile-cart-badge {
+    position: absolute !important;
+    top: -4px !important;
+    right: -4px !important;
+    min-width: 18px !important;
+    height: 18px !important;
+    padding: 0 4px !important;
+    font-size: 0.65rem !important;
+    font-weight: 800 !important;
+    border-radius: var(--radius-full) !important;
+    background: var(--primary-red) !important;
+    color: #FFF !important;
+    border: 1.5px solid #FFF !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.7) !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+  }
+  .pos-body {
+    grid-template-columns: 1fr !important;
+  }
+  .pos-catalog-panel {
+    border-right: none !important;
+    padding: 8px 10px !important;
+  }
+  .items-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+    gap: 8px !important;
+  }
+  .dish-card {
+    height: 175px !important;
+    max-height: 180px !important;
+  }
+  .dish-img-container {
+    height: 80px !important;
+    min-height: 80px !important;
+  }
+  .dish-desc {
+    display: none !important;
+  }
+
+  /* Cart Slide-Over Drawer for Mobile Phones */
+  .pos-cart-panel {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 90vw !important;
+    max-width: 380px !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    z-index: 1500 !important;
+    box-shadow: -10px 0 35px rgba(0, 0, 0, 0.9) !important;
+    transform: translateX(105%) !important;
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border-left: 1px solid var(--border-color) !important;
+  }
+  .pos-cart-panel.mobile-open {
+    transform: translateX(0) !important;
+  }
+  .btn-close-mobile-cart {
+    display: flex !important;
+  }
+
+  .modal-orders-card {
+    width: 96% !important;
+    height: 85vh !important;
+  }
+  .orders-modal-body .active-orders-grid {
+    grid-template-columns: 1fr !important;
   }
 }
 

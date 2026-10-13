@@ -600,7 +600,7 @@
        MODAL: CURRENT / ACTIVE ORDERS (KITCHEN QUEUE & SERVING)
        ==================================================================== -->
   <div class="modal-overlay" id="modal-orders">
-    <div class="modal-card" style="max-width: 820px; width: 95%;">
+    <div class="modal-card modal-orders-card" id="modal-orders-card">
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 8px;">
           <h3 class="modal-title">
@@ -612,7 +612,7 @@
         <button class="btn-close-modal" id="btn-close-orders-modal">&times;</button>
       </div>
 
-      <div class="modal-body" style="max-height: 65vh; overflow-y: auto;">
+      <div class="modal-body orders-modal-body" id="orders-modal-body">
         <!-- Filter Tabs: Active Queue, Completed, Cancelled -->
         <div class="orders-filter-row">
           <button class="btn-tag-action active" id="filter-orders-active" data-filter="Pending">
