@@ -457,89 +457,140 @@
       </div>
 
       <div class="modal-body" style="background: #E8E8E8; padding: 16px;">
-        <!-- Printable Receipt Sheet -->
+        <!-- Printable Receipt Sheet (Customer Copy + Kitchen Order Ticket) -->
         <div class="receipt-paper" id="printable-receipt-area">
-          <div class="receipt-header">
-            <img src="assets/logo.png" alt="Logo" class="receipt-logo-img">
-            <div class="receipt-brand-name">YAMATO SHOKUDŌ</div>
-            <div class="receipt-info-text">Authentic Japanese Eats • Comfort Food</div>
-            <div class="receipt-info-text">Tel: +639124482693</div>
-            <div class="receipt-info-text">IG: @yamatoshokudo.ph</div>
+          <!-- 1. CUSTOMER RECEIPT SLIP -->
+          <div class="receipt-slip customer-receipt-slip">
+            <div class="receipt-header">
+              <img src="assets/logo.png" alt="Logo" class="receipt-logo-img">
+              <div class="receipt-brand-name">YAMATO SHOKUDŌ</div>
+              <div class="receipt-info-text">Authentic Japanese Eats • Comfort Food</div>
+              <div class="receipt-info-text">Tel: +639124482693</div>
+              <div class="receipt-info-text">IG: @yamatoshokudo.ph</div>
+              <div class="receipt-type-banner">*** CUSTOMER RECEIPT ***</div>
+            </div>
+
+            <div class="receipt-divider"></div>
+
+            <div class="receipt-meta-row">
+              <span id="receipt-order-id">Order #0001</span>
+              <span id="receipt-date-time">2026-10-01 21:35</span>
+            </div>
+            <div class="receipt-meta-row">
+              <span id="receipt-dining-type">DINE IN (Table 1)</span>
+              <span id="receipt-pay-method">CASH</span>
+            </div>
+
+            <div class="receipt-divider"></div>
+
+            <!-- Items Table (with quantities & amounts) -->
+            <table class="receipt-items-table">
+              <thead>
+                <tr>
+                  <th class="item-qty-col">QTY</th>
+                  <th>ITEM</th>
+                  <th class="item-amt-col">TOTAL</th>
+                </tr>
+              </thead>
+              <tbody id="receipt-items-body">
+                <!-- Dynamically populated rows -->
+              </tbody>
+            </table>
+
+            <div class="receipt-divider"></div>
+
+            <!-- Calculation Rows -->
+            <div class="receipt-calc-row">
+              <span>Subtotal:</span>
+              <span id="receipt-subtotal-val">₱0.00</span>
+            </div>
+            <div class="receipt-calc-row" id="receipt-discount-row">
+              <span id="receipt-discount-label">Discount:</span>
+              <span id="receipt-discount-val">-₱0.00</span>
+            </div>
+            <div class="receipt-calc-row grand-total">
+              <span>TOTAL DUE:</span>
+              <span id="receipt-total-val">₱0.00</span>
+            </div>
+            <div class="receipt-calc-row">
+              <span>Cash Tendered:</span>
+              <span id="receipt-tendered-val">₱0.00</span>
+            </div>
+            <div class="receipt-calc-row">
+              <span>Change:</span>
+              <span id="receipt-change-val">₱0.00</span>
+            </div>
+
+            <div class="receipt-divider"></div>
+
+            <div class="receipt-footer">
+              <div>*** ARIGATO GOZAIMASU! ***</div>
+              <div>Thank you for dining with Yamato Shokudo!</div>
+              <div class="receipt-barcode">||| | |||| ||| ||||| |||</div>
+            </div>
           </div>
 
-          <div class="receipt-divider"></div>
-
-          <div class="receipt-meta-row">
-            <span id="receipt-order-id">Order #0001</span>
-            <span id="receipt-date-time">2026-10-01 21:35</span>
-          </div>
-          <div class="receipt-meta-row">
-            <span id="receipt-dining-type">DINE IN (Table 1)</span>
-            <span id="receipt-pay-method">CASH</span>
+          <!-- SEPARATOR / CUT LINE FOR CONTINUOUS ROLL OR AUTO-CUTTER -->
+          <div class="receipt-cut-line">
+            <span class="cut-line-label">✂ CUT HERE / KITCHEN TICKET BELOW ✂</span>
           </div>
 
-          <div class="receipt-divider"></div>
+          <!-- 2. KITCHEN ORDER TICKET (NO MONETARY VALUES / NO PRICES) -->
+          <div class="receipt-slip kitchen-receipt-slip">
+            <div class="kitchen-ticket-header">
+              <div class="kitchen-ticket-badge">🍳 KITCHEN ORDER TICKET</div>
+              <div class="kitchen-order-number" id="kitchen-order-id">ORDER #0001</div>
+              <div>
+                <span class="kitchen-meta-pill" id="kitchen-dining-type">DINE IN (Table 1)</span>
+              </div>
+              <div class="kitchen-meta-sub" id="kitchen-date-time">2026-10-01 21:35</div>
+            </div>
 
-          <!-- Items Table -->
-          <table class="receipt-items-table">
-            <thead>
-              <tr>
-                <th class="item-qty-col">QTY</th>
-                <th>ITEM</th>
-                <th class="item-amt-col">TOTAL</th>
-              </tr>
-            </thead>
-            <tbody id="receipt-items-body">
-              <!-- Dynamically populated rows -->
-            </tbody>
-          </table>
+            <div class="receipt-divider thick"></div>
 
-          <div class="receipt-divider"></div>
+            <!-- Kitchen Items Table (Only QTY, ITEM NAME & SPECIAL INSTRUCTIONS - ZERO PRICES) -->
+            <table class="kitchen-items-table">
+              <thead>
+                <tr>
+                  <th style="width: 48px; text-align: left;">QTY</th>
+                  <th style="text-align: left;">ORDER ITEM / PREPARATION</th>
+                </tr>
+              </thead>
+              <tbody id="kitchen-items-body">
+                <!-- Dynamically populated rows with no prices -->
+              </tbody>
+            </table>
 
-          <!-- Calculation Rows -->
-          <div class="receipt-calc-row">
-            <span>Subtotal:</span>
-            <span id="receipt-subtotal-val">₱0.00</span>
-          </div>
-          <div class="receipt-calc-row" id="receipt-discount-row">
-            <span>Discount:</span>
-            <span id="receipt-discount-val">-₱0.00</span>
-          </div>
-          <div class="receipt-calc-row grand-total">
-            <span>TOTAL DUE:</span>
-            <span id="receipt-total-val">₱0.00</span>
-          </div>
-          <div class="receipt-calc-row">
-            <span>Cash Tendered:</span>
-            <span id="receipt-tendered-val">₱0.00</span>
-          </div>
-          <div class="receipt-calc-row">
-            <span>Change:</span>
-            <span id="receipt-change-val">₱0.00</span>
-          </div>
+            <div class="receipt-divider thick"></div>
 
-          <div class="receipt-divider"></div>
-
-          <div class="receipt-footer">
-            <div>*** ARIGATO GOZAIMASU! ***</div>
-            <div>Thank you for dining with Yamato Shokudo!</div>
-            <div class="receipt-barcode">||| | |||| ||| ||||| |||</div>
+            <div class="kitchen-ticket-footer">
+              <div id="kitchen-total-items-count">TOTAL ITEMS: 0</div>
+              <div class="kitchen-footer-note">*** KITCHEN COPY • PREPARE WITH CARE ***</div>
+            </div>
           </div>
         </div>
       </div>
 
       <div class="modal-footer modal-receipt-footer no-print">
-        <button class="btn-modal-action" id="btn-view-orders-from-receipt" style="color: var(--accent-gold);">
+        <button class="btn-modal-action" id="btn-view-orders-from-receipt" style="color: var(--accent-gold);" title="View Active Orders">
           <i class="fa-solid fa-bell-concierge"></i>
-          Active Orders
+          Orders
         </button>
-        <button class="btn-modal-action" id="btn-new-order-from-receipt">
+        <button class="btn-modal-action" id="btn-new-order-from-receipt" title="Start New Sale">
           <i class="fa-solid fa-plus"></i>
           New Sale
         </button>
-        <button class="btn-modal-action primary" id="btn-print-receipt">
+        <button class="btn-modal-action" id="btn-print-customer-only" title="Print Customer Copy Only">
+          <i class="fa-solid fa-user"></i>
+          Customer Slip
+        </button>
+        <button class="btn-modal-action" id="btn-print-kitchen-only" title="Print Kitchen Ticket Only">
+          <i class="fa-solid fa-utensils"></i>
+          Kitchen Slip
+        </button>
+        <button class="btn-modal-action primary" id="btn-print-receipt" title="Print Both (Customer + Kitchen)">
           <i class="fa-solid fa-print"></i>
-          Print Receipt
+          Print Both
         </button>
       </div>
     </div>
@@ -984,10 +1035,20 @@
           </button>
         </div>
 
+        <!-- Special Daily Limited Promos (Main Bowls ₱100 OFF) -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+          <h4 style="font-size: 0.84rem; color: var(--accent-gold); display: flex; align-items: center; justify-content: space-between;">
+            <span><i class="fa-solid fa-star" style="color: var(--accent-gold);"></i> Daily Limited Promos (1x / Day)</span>
+          </h4>
+          <div id="daily-promo-status-box" style="display: flex; flex-direction: column; gap: 6px;">
+            <!-- Dynamically populated by renderPromosModalList() -->
+          </div>
+        </div>
+
         <!-- Active Promos List -->
         <div style="display: flex; flex-direction: column; gap: 6px;">
           <h4 style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.4px;">
-            Active Promos & Discounts
+            Custom Promos & Discounts
           </h4>
           <div id="promos-list-container" style="display: flex; flex-direction: column; gap: 6px;">
             <!-- Dynamically populated promo list items -->
