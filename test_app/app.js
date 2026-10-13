@@ -655,12 +655,12 @@ function calculateCartTotals() {
   let discountAmount = 0;
 
   if (state.discountPromoId === 'main-bowl-100') {
-    // Only applies if cart has at least 1 Main Bowl dish
-    const mainBowlsInCart = state.cart.filter(line => line.item.category === 'Main Bowls');
-    if (mainBowlsInCart.length > 0) {
-      const mainBowlsSubtotal = mainBowlsInCart.reduce((sum, line) => sum + (line.item.price * line.qty), 0);
-      // Flat ₱100 discount (capped at main bowls subtotal so price never drops below ₱0)
-      discountAmount = Math.min(mainBowlsSubtotal, 100);
+    // Sets the Main Bowl price to exactly ₱100 (deducting the difference: item.price - 100)
+    const eligibleMainBowls = state.cart.filter(line => line.item.category === 'Main Bowls' && line.item.price > 100);
+    if (eligibleMainBowls.length > 0) {
+      // Pick the highest-priced Main Bowl to apply the ₱100 special price (e.g. ₱160 -> ₱100 = ₱60 discount)
+      const topBowl = [...eligibleMainBowls].sort((a, b) => b.item.price - a.item.price)[0];
+      discountAmount = topBowl.item.price - 100;
     } else {
       discountAmount = 0;
     }
@@ -692,12 +692,12 @@ function renderCart() {
   if (discountDisplay) {
     if (state.discountPromoId === 'main-bowl-100') {
       const hasMainBowl = state.cart.some(line => line.item.category === 'Main Bowls');
-      if (hasMainBowl) {
+      if (hasMainBowl && discountAmount > 0) {
         discountDisplay.textContent = `-${formatCurrency(discountAmount)}`;
-        discountDisplay.title = 'Main Bowls Promo (₱100 OFF Applied)';
+        discountDisplay.title = 'Main Bowl Promo applied: Bowl costs exactly ₱100.00';
       } else {
         discountDisplay.textContent = `-₱0.00 (Needs Main Bowl)`;
-        discountDisplay.title = 'Add at least 1 Main Bowl dish to cart to activate ₱100 promo';
+        discountDisplay.title = 'Add a Main Bowl dish to cart to apply the ₱100 promo price';
       }
     } else {
       discountDisplay.textContent = `-${formatCurrency(discountAmount)}`;
@@ -1193,10 +1193,10 @@ function renderDiscountDropdown() {
     return `<option value="${disc.percent}" ${isSelected}>${escapeHtml(label)}</option>`;
   }).join('');
 
-  // 2. Main Bowls Flat ₱100 Promo (Daily Limited)
+  // 2. Main Bowl for ₱100 Promo (Daily Limited)
   const promoLabel = usedToday 
-    ? '🔒 Main Bowls Promo (-₱100) [USED TODAY]' 
-    : '⭐ Main Bowls Promo (-₱100 Flat) [1x/Day]';
+    ? '🔒 Main Bowl for ₱100 [USED TODAY]' 
+    : '⭐ Main Bowl for ₱100 Promo [1x/Day]';
   const promoDisabled = usedToday ? 'disabled' : '';
   const promoSelected = (isCurrentMainBowl && !usedToday) ? 'selected' : '';
 
@@ -1226,11 +1226,11 @@ function renderPromosModalList() {
       <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-deep); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px 12px; gap: 8px;">
         <div style="display: flex; flex-direction: column; gap: 3px;">
           <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-weight: 800; color: #FFF; font-size: 0.88rem;">🍜 Main Bowls Flat ₱100 Promo</span>
+            <span style="font-weight: 800; color: #FFF; font-size: 0.88rem;">🍜 Main Bowl for ₱100 Promo</span>
             ${statusBadge}
           </div>
           <span style="font-size: 0.72rem; color: var(--text-muted);">
-            Deducts flat ₱100 when order contains Main Bowls (Torikatsu Curry, Katsudon, Gyudon, etc.). Limited to 1 use per day.
+            Sets the price of the Main Bowl dish (e.g. Torikatsu Curry ₱160 -> ₱100) to exactly ₱100. Limited to 1 use per day.
           </span>
         </div>
         ${resetActionBtn}
@@ -2923,7 +2923,7 @@ function initEventListeners() {
     const val = e.target.value;
     if (val === 'main-bowl-100') {
       if (isMainBowlPromoUsedToday()) {
-        showToast('⚠️ Main Bowls ₱100 Promo has already been used today! Available again tomorrow.', 'fa-lock');
+        showToast('⚠️ Main Bowl ₱100 Promo has already been used today! Available again tomorrow.', 'fa-lock');
         state.discountPromoId = null;
         state.discountType = 'percent';
         state.discountPercent = 0;
@@ -2935,13 +2935,13 @@ function initEventListeners() {
       state.discountPromoId = 'main-bowl-100';
       state.discountType = 'flat';
       state.discountPercent = 0;
-      state.discountName = 'Main Bowls Promo (₱100 OFF)';
+      state.discountName = 'Main Bowl for ₱100 Promo';
 
       const hasMainBowl = state.cart.some(line => line.item.category === 'Main Bowls');
       if (!hasMainBowl) {
-        showToast('🍜 Add at least 1 Main Bowl to your cart to activate the ₱100 promo!', 'fa-bowl-rice');
+        showToast('🍜 Add a Main Bowl to cart to apply the ₱100 promo price!', 'fa-bowl-rice');
       } else {
-        showToast('⭐ ₱100 Main Bowls Promo applied!', 'fa-tag');
+        showToast('⭐ Main Bowl Promo applied: Bowl is only ₱100!', 'fa-tag');
       }
     } else {
       state.discountPromoId = null;
