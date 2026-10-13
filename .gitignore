@@ -37,3 +37,6 @@ desktop.ini
 .idea/
 # Temporary deployment archives
 pos_deploy.zip
+
+# Local backup archives
+.backups/

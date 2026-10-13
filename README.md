@@ -77,3 +77,30 @@ To open on a **Tablet** connected to the same Wi-Fi, open the Wi-Fi IP shown in 
 2. Go to [PWABuilder.com](https://www.pwabuilder.com/).
 3. Paste your URL and click **Start**.
 4. Click **"Package for Android"** to download a ready-to-install `.apk` for your tablet!
+
+---
+
+## 🧪 Safe Testing & Feature Revision Workflow
+
+To try new features, designs, and code revisions safely without risking the live POS:
+
+### 1. Launch the Isolated Test App
+- Double-click `test_app.bat`.
+- The test app runs in an isolated environment on port `8091` (`http://localhost:8091`).
+- All edits are made within the `test_app/` folder (`test_app/index.html`, `test_app/app.js`, `test_app/style.css`).
+- LocalStorage and sales records are completely isolated from the live POS.
+- Your **LIVE POS** (`run_app.bat` on `http://localhost:8080`) remains 100% untouched and safe!
+
+### 2. Push Changes to Live POS & GitHub
+When your test features are verified and ready:
+- Double-click `push_to_live.bat`.
+- This automatically:
+  1. Creates a safety backup of live files in `.backups/`.
+  2. Copies updated files from `test_app/` into the live app.
+  3. Rebuilds `Yamato_POS_Offline.html` and Android assets.
+  4. Commits and pushes the updates directly to GitHub (`origin/main`).
+
+### 3. Reset Test App from Live (Optional)
+If you ever want to reset or sync `test_app` with current live files:
+- Double-click `sync_live_to_test.bat`.
+

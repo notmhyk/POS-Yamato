@@ -13,6 +13,7 @@ Table of Contents:
 6. Using the POS (Adding Items, Changing Prices, Checkout & Thermal Receipts)
 7. Data Storage & CSV Export for Excel / Google Sheets
 8. How to Move This Project to Another Computer / Work Laptop
+9. Safe Feature Testing & Revision Workflow (test_app.bat & push_to_live.bat)
 
 ==============================================================================
 1. RUNNING ON ANDROID TABLET / PHONE (Over Wi-Fi)
@@ -151,5 +152,37 @@ To continue coding or running this POS system on another computer:
    - Open in any code editor (VS Code, Cursor, etc.) to continue coding.
 
 ==============================================================================
+9. SAFE FEATURE TESTING & REVISION WORKFLOW (test_app.bat & push_to_live.bat)
+==============================================================================
+
+To try new features, edit code, or test revisions safely without risking
+your live store / cash register:
+
+STEP 1: DEVELOP & TEST IN 'test_app'
+  - Double-click "test_app.bat".
+  - This launches an isolated test server on Port 8091 (http://localhost:8091).
+  - All test files are located inside the "test_app/" folder:
+      test_app/index.html
+      test_app/app.js
+      test_app/style.css
+  - Any edits or test orders you do here DO NOT affect the live app.
+    Your live database and live server (run_app.bat on Port 8080) stay 100% safe!
+
+STEP 2: PROMOTE TEST APP TO LIVE & GITHUB
+  - When your new features are verified and working great:
+  - Double-click "push_to_live.bat".
+  - It will:
+    1. Show you which files were modified.
+    2. Automatically save a backup of the current live files into ".backups/".
+    3. Copy the updated files from "test_app/" to the live app.
+    4. Automatically rebuild the offline bundle (Yamato_POS_Offline.html).
+    5. Commit the changes and push directly to GitHub (origin/main).
+
+STEP 3: RESET OR REFRESH TEST APP (OPTIONAL)
+  - If you ever want to reset test_app back to match the live app:
+  - Double-click "sync_live_to_test.bat".
+
+==============================================================================
   Arigato Gozaimasu! Thank you for using Yamato Shokudō POS! 🥢
 ==============================================================================
+
