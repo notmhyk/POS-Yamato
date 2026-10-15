@@ -4522,16 +4522,20 @@ input, button, select, textarea {
 }
 
 .login-error-box {
-  background: rgba(229, 37, 42, 0.12) !important;
-  border: 1px solid rgba(229, 37, 42, 0.38) !important;
+  background: rgba(229, 37, 42, 0.14) !important;
+  border: 1px solid rgba(229, 37, 42, 0.4) !important;
   border-radius: 10px !important;
   padding: 10px 14px !important;
   color: #FF8F92 !important;
   font-size: 0.82rem !important;
   font-weight: 600 !important;
-  display: flex !important;
+  display: none;
   align-items: center !important;
   gap: 10px !important;
+}
+
+.login-error-box.active {
+  display: flex !important;
 }
 
 .login-footer-hint {

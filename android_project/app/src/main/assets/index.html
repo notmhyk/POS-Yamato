@@ -13,7 +13,7 @@
 
   <!-- Google Fonts & Font Awesome Icons (100% Offline Local Bundle) -->
   <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=33">
+  <link rel="stylesheet" href="style.css?v=34">
 </head>
 <body>
 
@@ -1106,7 +1106,7 @@
       </div>
 
       <div class="modal-body login-modal-body">
-        <form id="login-form" class="login-form" onsubmit="return false;">
+        <form id="login-form" class="login-form" onsubmit="handleLoginSubmit(); return false;">
           <div class="form-group login-form-group">
             <label class="form-label" for="login-username">Cashier / Username</label>
             <div class="login-input-wrap">
@@ -1126,12 +1126,12 @@
             </div>
           </div>
 
-          <div class="login-error-box" id="login-error-box" style="display: none;">
+          <div class="login-error-box" id="login-error-box" style="display: none !important;">
             <i class="fa-solid fa-circle-exclamation"></i>
             <span id="login-error-text">Invalid username or password.</span>
           </div>
 
-          <button type="button" class="btn-login-submit" id="btn-submit-login">
+          <button type="submit" class="btn-login-submit" id="btn-submit-login">
             <i class="fa-solid fa-arrow-right-to-bracket"></i>
             <span>Login to Terminal</span>
           </button>
@@ -1265,6 +1265,6 @@
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Main JavaScript App -->
-  <script src="app.js?v=33"></script>
+  <script src="app.js?v=34"></script>
 </body>
 </html>
