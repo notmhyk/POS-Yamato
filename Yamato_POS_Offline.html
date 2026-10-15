@@ -2558,51 +2558,77 @@ input, button, select, textarea {
 }
 
 .active-orders-modal-badge {
-  background: rgba(245, 158, 11, 0.15);
-  color: var(--accent-gold);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 2px 8px;
+  background: rgba(245, 158, 11, 0.18);
+  color: #FCD34D;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  font-size: 0.74rem;
+  font-weight: 800;
+  padding: 3px 10px;
   border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
 }
 
 .orders-filter-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 6px;
-  margin-bottom: 14px;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-x;
-  scrollbar-width: none;
-  padding: 4px;
-  background: rgba(14, 13, 18, 0.7);
-  border-radius: var(--radius-full);
-  border: 1px solid var(--border-color);
-  max-width: 100%;
-}
-
-.orders-filter-row::-webkit-scrollbar {
-  display: none;
+  padding: 5px;
+  background: rgba(14, 13, 18, 0.85);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+  max-width: 520px;
+  width: 100%;
+  margin: 0 auto 10px auto;
+  flex-shrink: 0;
 }
 
 .orders-filter-row .btn-tag-action {
-  padding: 6px 14px;
-  font-size: 0.8rem;
-  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 12px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  border-radius: 9px;
   border: 1px solid transparent;
   background: transparent;
   color: var(--text-secondary);
-  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
   white-space: nowrap;
-  transition: all var(--transition-fast);
+}
+
+.orders-filter-row .btn-tag-action .tab-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.orders-filter-row .tab-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  transition: all 0.2s ease;
 }
 
 .orders-filter-row .btn-tag-action:hover {
-  background: var(--bg-card-hover);
+  background: rgba(255, 255, 255, 0.05);
   color: var(--text-white);
-  border-color: var(--border-color);
 }
 
 .orders-filter-row .btn-tag-action.active {
@@ -2612,46 +2638,62 @@ input, button, select, textarea {
 
 /* Specific Active Tab Highlights */
 .orders-filter-row #filter-orders-active.active {
-  background: linear-gradient(135deg, #F59E0B, #D97706);
-  border-color: #F59E0B;
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  border-color: rgba(245, 158, 11, 0.6);
   color: #FFF;
-  box-shadow: 0 2px 12px rgba(245, 158, 11, 0.45);
+  box-shadow: 0 3px 14px rgba(245, 158, 11, 0.4);
+}
+.orders-filter-row #filter-orders-active.active .tab-count-badge {
+  background: rgba(0, 0, 0, 0.28);
+  color: #FFF;
 }
 
 .orders-filter-row #filter-orders-completed.active {
-  background: linear-gradient(135deg, #10B981, #059669);
-  border-color: #10B981;
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  border-color: rgba(16, 185, 129, 0.6);
   color: #FFF;
-  box-shadow: 0 2px 12px rgba(16, 185, 129, 0.45);
+  box-shadow: 0 3px 14px rgba(16, 185, 129, 0.4);
+}
+.orders-filter-row #filter-orders-completed.active .tab-count-badge {
+  background: rgba(0, 0, 0, 0.28);
+  color: #FFF;
 }
 
 .orders-filter-row #filter-orders-cancelled.active {
-  background: linear-gradient(135deg, #EF4444, #DC2626);
-  border-color: #EF4444;
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  border-color: rgba(239, 68, 68, 0.6);
   color: #FFF;
-  box-shadow: 0 2px 12px rgba(239, 68, 68, 0.45);
+  box-shadow: 0 3px 14px rgba(239, 68, 68, 0.4);
+}
+.orders-filter-row #filter-orders-cancelled.active .tab-count-badge {
+  background: rgba(0, 0, 0, 0.28);
+  color: #FFF;
 }
 
 /* Fixed & Structured Current Orders Modal Card */
 .modal-orders-card {
   width: 95% !important;
-  max-width: 860px !important;
-  height: 76vh !important;
-  min-height: 520px !important;
+  max-width: 880px !important;
+  height: auto !important;
   max-height: 86vh !important;
+  min-height: 440px !important;
   display: flex !important;
   flex-direction: column !important;
   box-sizing: border-box !important;
+  border-radius: 18px !important;
+  background: #14131A !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.75) !important;
+  overflow: hidden;
 }
 
 .orders-modal-body {
   flex: 1 1 auto !important;
   min-height: 0 !important;
-  height: 100% !important;
   display: flex !important;
   flex-direction: column !important;
   overflow-y: auto !important;
-  padding: 12px 16px !important;
+  padding: 14px 18px !important;
   gap: 12px !important;
 }
 
@@ -2660,49 +2702,67 @@ input, button, select, textarea {
 }
 
 .active-orders-grid {
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
-  align-content: flex-start !important;
+  flex: 1 1 auto;
+  min-height: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  align-items: stretch;
+  padding-bottom: 6px;
+}
+
+.active-orders-grid.single-order {
+  grid-template-columns: minmax(340px, 480px) !important;
+  justify-content: center !important;
 }
 
 .order-queue-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 10px 12px;
+  background: linear-gradient(180deg, rgba(28, 27, 38, 0.96) 0%, rgba(20, 19, 28, 0.98) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 6px;
-  transition: var(--transition-fast);
+  gap: 10px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  height: 126px;
-  min-height: 126px;
-  max-height: 126px;
   box-sizing: border-box;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  height: 100%;
+  min-height: 275px;
 }
 
 .order-queue-card:hover {
-  background: var(--bg-card-hover);
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  background: linear-gradient(180deg, rgba(34, 32, 46, 0.98) 0%, rgba(24, 23, 34, 0.99) 100%);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
 .order-queue-card.status-pending {
-  border-left: 4px solid var(--accent-gold);
+  border-top: 3px solid var(--accent-gold);
+  border-left: 1px solid rgba(245, 158, 11, 0.3);
+}
+.order-queue-card.status-pending:hover {
+  border-color: rgba(245, 158, 11, 0.6) rgba(255, 255, 255, 0.15) rgba(255, 255, 255, 0.15) rgba(245, 158, 11, 0.6);
+  box-shadow: 0 8px 26px rgba(245, 158, 11, 0.14), 0 4px 16px rgba(0, 0, 0, 0.5);
+  transform: translateY(-2px);
 }
 
 .order-queue-card.status-completed {
-  border-left: 4px solid var(--accent-green);
-  opacity: 0.95;
+  border-top: 3px solid var(--accent-green);
+  border-left: 1px solid rgba(16, 185, 129, 0.3);
+  opacity: 0.92;
+}
+.order-queue-card.status-completed:hover {
+  border-color: rgba(16, 185, 129, 0.6) rgba(255, 255, 255, 0.15) rgba(255, 255, 255, 0.15) rgba(16, 185, 129, 0.6);
+  box-shadow: 0 8px 26px rgba(16, 185, 129, 0.12), 0 4px 16px rgba(0, 0, 0, 0.5);
+  transform: translateY(-2px);
 }
 
 .order-queue-card.status-cancelled {
-  border-left: 4px solid var(--primary-red);
-  opacity: 0.75;
+  border-top: 3px solid var(--primary-red);
+  border-left: 1px solid rgba(239, 68, 68, 0.25);
+  opacity: 0.78;
 }
 
 .order-queue-header {
@@ -2716,147 +2776,325 @@ input, button, select, textarea {
 .order-queue-meta {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
+  min-width: 0;
 }
 
-.order-queue-number {
-  font-size: 1.05rem;
-  font-weight: 900;
-  color: #FFF;
-  font-family: 'Outfit', sans-serif;
-  letter-spacing: 0.3px;
-}
-
-.order-queue-type {
-  font-size: 0.72rem;
-  color: var(--text-secondary);
-  font-weight: 600;
+.order-queue-title-row {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
-.order-queue-qty-badge {
+.order-queue-number {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #FFF;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.5px;
+  line-height: 1.1;
+}
+
+.order-queue-dining-tag {
   display: inline-flex;
   align-items: center;
-  font-size: 0.65rem;
+  gap: 4px;
+  font-size: 0.72rem;
   font-weight: 700;
-  color: var(--accent-purple-light);
-  background: rgba(139, 92, 246, 0.15);
-  border: 1px solid rgba(139, 92, 246, 0.3);
-  padding: 1px 6px;
-  border-radius: var(--radius-full);
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
+}
+
+.order-queue-dining-tag.takeout {
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+  border-color: rgba(59, 130, 246, 0.35);
 }
 
 .order-queue-status {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 2px;
+  gap: 4px;
   flex-shrink: 0;
 }
 
 .order-time-tag {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
 }
 
 .order-status-pill {
-  font-size: 0.65rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.68rem;
   font-weight: 800;
-  padding: 2px 7px;
+  padding: 3px 8px;
   border-radius: var(--radius-full);
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
 
+.status-pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
 .order-status-pill.status-pending {
-  background: rgba(245, 158, 11, 0.2);
+  background: rgba(245, 158, 11, 0.18);
   color: var(--accent-gold);
   border: 1px solid rgba(245, 158, 11, 0.4);
 }
+.order-status-pill.status-pending .status-pulse-dot {
+  background: var(--accent-gold);
+  box-shadow: 0 0 6px var(--accent-gold);
+  animation: pulseDot 1.6s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.6; }
+}
 
 .order-status-pill.status-completed {
-  background: rgba(16, 185, 129, 0.2);
+  background: rgba(16, 185, 129, 0.18);
   color: var(--accent-green);
   border: 1px solid rgba(16, 185, 129, 0.4);
 }
-
-.order-status-pill.status-cancelled {
-  background: rgba(229, 37, 42, 0.2);
-  color: var(--primary-red);
-  border: 1px solid rgba(229, 37, 42, 0.4);
+.order-status-pill.status-completed .status-pulse-dot {
+  background: var(--accent-green);
 }
 
+.order-status-pill.status-cancelled {
+  background: rgba(229, 37, 42, 0.18);
+  color: #f87171;
+  border: 1px solid rgba(229, 37, 42, 0.4);
+}
+.order-status-pill.status-cancelled .status-pulse-dot {
+  background: #f87171;
+}
+
+/* Items Preview Box */
+.order-queue-items-box {
+  background: rgba(12, 11, 16, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  flex: 1 1 auto;
+  min-height: 102px;
+  max-height: 108px;
+  box-sizing: border-box;
+}
+
+.order-queue-items-box:hover {
+  background: rgba(20, 18, 28, 0.85);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.order-queue-items-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+  padding-bottom: 4px;
+  flex-shrink: 0;
+}
+
+.order-queue-items-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-secondary);
+}
+
+.order-queue-tap-prompt {
+  color: var(--accent-gold);
+  font-size: 0.68rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  transition: transform 0.15s ease;
+}
+.order-queue-items-box:hover .order-queue-tap-prompt {
+  transform: translateX(2px);
+}
+
+.order-queue-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+
+.order-queue-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.order-queue-item-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.order-queue-item-qty {
+  font-weight: 800;
+  font-size: 0.82rem;
+  color: var(--accent-gold);
+  flex-shrink: 0;
+  min-width: 18px;
+}
+
+.order-queue-item-name {
+  color: #F1F5F9;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.order-queue-item-note {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #fde047;
+  background: rgba(234, 179, 8, 0.16);
+  border: 1px solid rgba(234, 179, 8, 0.35);
+  padding: 1px 5px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.order-queue-overflow-tag {
+  font-size: 0.72rem;
+  color: var(--accent-purple-light);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding-top: 2px;
+}
+
+/* Summary Row */
 .order-queue-summary-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
+  padding-top: 6px;
   border-top: 1px dashed rgba(255, 255, 255, 0.08);
-  padding-top: 5px;
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
+.order-queue-paymethod {
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 600;
 }
 
 .order-queue-total {
-  font-size: 0.82rem;
-  color: var(--text-secondary);
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
 }
 
-.order-queue-total strong {
-  font-size: 0.98rem;
+.order-queue-total .total-lbl {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.order-queue-total .total-val {
+  font-size: 1.08rem;
   font-weight: 900;
   color: #FFF;
   font-family: 'Outfit', sans-serif;
+  letter-spacing: 0.3px;
 }
 
+/* Tablet-friendly Action Buttons */
 .order-queue-footer {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  margin-top: auto;
+  margin-top: 2px;
+  padding-top: 0;
+  flex-shrink: 0;
 }
 
 .order-queue-actions {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
   width: 100%;
-  justify-content: flex-end;
 }
 
 .btn-order-action {
-  height: 28px;
-  padding: 0 10px;
-  border-radius: var(--radius-sm);
-  font-size: 0.76rem;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  transition: var(--transition-fast);
-}
-
-.btn-order-action.complete {
-  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-  color: #FFF;
-  border: 1px solid #10B981;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
-}
-
-.btn-order-action.complete:hover {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.5);
+  gap: 6px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  border: 1px solid transparent;
+  box-sizing: border-box;
 }
 
 .btn-order-action.cancel {
+  height: 40px;
+  padding: 0 12px;
   background: rgba(229, 37, 42, 0.12);
-  color: #FF6B6B;
-  border: 1px solid rgba(229, 37, 42, 0.35);
+  color: #fca5a5;
+  border: 1px solid rgba(229, 37, 42, 0.3);
+  flex-shrink: 0;
 }
-
 .btn-order-action.cancel:hover {
   background: var(--primary-red);
   color: #FFF;
@@ -2865,27 +3103,47 @@ input, button, select, textarea {
 }
 
 .btn-order-action.view {
-  background: rgba(139, 92, 246, 0.15);
+  height: 40px;
+  padding: 0 14px;
+  background: rgba(139, 92, 246, 0.14);
   color: var(--accent-purple-light);
   border: 1px solid rgba(139, 92, 246, 0.35);
+  flex-shrink: 0;
 }
-
 .btn-order-action.view:hover {
   background: var(--accent-purple);
   color: #FFF;
   border-color: var(--accent-purple);
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.4);
+}
+.btn-order-action.view.full-width {
+  flex: 1;
+}
+
+.btn-order-action.complete {
+  flex: 1;
+  height: 40px;
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  color: #FFF;
+  border: 1px solid #10B981;
+  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.35);
+}
+.btn-order-action.complete:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.5);
+  transform: translateY(-1px);
 }
 
 .btn-order-action.receipt {
-  background: var(--bg-deep);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-color);
+  flex: 1;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #F1F5F9;
+  border: 1px solid rgba(255, 255, 255, 0.14);
 }
-
 .btn-order-action.receipt:hover {
-  background: var(--bg-card-hover);
+  background: rgba(255, 255, 255, 0.16);
   color: #FFF;
   border-color: var(--accent-gold);
   transform: translateY(-1px);
@@ -2902,6 +3160,7 @@ input, button, select, textarea {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: 10px 12px;
+  flex-shrink: 0;
 }
 
 .order-details-meta-item {
@@ -2929,8 +3188,9 @@ input, button, select, textarea {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   overflow: hidden;
-  max-height: 220px;
-  overflow-y: auto;
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .order-details-items-table {
@@ -2949,20 +3209,22 @@ input, button, select, textarea {
   padding: 8px 10px;
   text-align: left;
   border-bottom: 1px solid var(--border-color);
-  position: sticky;
-  top: 0;
-  z-index: 1;
 }
 
 .order-details-items-table td {
   padding: 8px 10px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  vertical-align: top;
+  vertical-align: middle;
+}
+
+.order-details-items-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .order-detail-item-name {
   font-weight: 700;
   color: var(--text-white);
+  line-height: 1.3;
 }
 
 .order-detail-item-note {
@@ -2983,6 +3245,7 @@ input, button, select, textarea {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  flex-shrink: 0;
 }
 
 .order-details-summary-box .summary-line {
@@ -3012,31 +3275,50 @@ input, button, select, textarea {
 }
 
 .empty-orders-view {
-  flex: 1 1 auto !important;
-  min-height: 280px !important;
-  height: 100% !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: center !important;
-  margin: auto 0 !important;
-  padding: 30px 20px !important;
-  text-align: center !important;
+  display: none;
+  flex: 1 1 auto;
+  min-height: 240px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: auto;
+  padding: 40px 20px;
+  text-align: center;
   color: var(--text-muted);
-  gap: 10px;
+  gap: 12px;
+}
+
+.empty-orders-view.show {
+  display: flex !important;
 }
 
 .empty-orders-icon {
-  width: 56px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
-  background: var(--bg-card);
+  background: rgba(255, 255, 255, 0.04);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.8rem;
-  color: var(--accent-green);
-  border: 1px solid var(--border-color);
+  font-size: 2rem;
+  color: var(--accent-gold);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.empty-orders-view h4 {
+  font-size: 1.15rem;
+  color: #FFF;
+  margin: 0;
+  font-weight: 700;
+}
+
+.empty-orders-view p {
+  font-size: 0.86rem;
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 360px;
+  line-height: 1.45;
 }
 
 /* Toast Notifications */
@@ -3440,19 +3722,19 @@ input, button, select, textarea {
   .modal-orders-card {
     width: 96% !important;
     max-width: 96% !important;
-    height: 82vh !important;
-    min-height: 540px !important;
+    height: auto !important;
+    min-height: 440px !important;
     max-height: 90vh !important;
   }
 
   .orders-modal-body {
-    padding: 10px 12px !important;
-    gap: 10px !important;
+    padding: 12px 14px !important;
+    gap: 12px !important;
   }
 
   .orders-modal-body .active-orders-grid {
-    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)) !important;
-    gap: 8px !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
   }
 
   /* POS Workspace Split Layout for Tablet Portrait: FIXED Cart Sidebar */
@@ -3625,10 +3907,30 @@ input, button, select, textarea {
 
   .modal-orders-card {
     width: 96% !important;
-    height: 85vh !important;
+    height: auto !important;
+    max-height: 92vh !important;
+    min-height: 400px !important;
+    border-radius: 14px !important;
   }
   .orders-modal-body .active-orders-grid {
     grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  .orders-filter-row {
+    padding: 3px !important;
+    gap: 4px !important;
+  }
+  .orders-filter-row .btn-tag-action {
+    height: 38px !important;
+    padding: 0 6px !important;
+    font-size: 0.76rem !important;
+    gap: 5px !important;
+  }
+  .orders-filter-row .tab-count-badge {
+    min-width: 18px !important;
+    height: 18px !important;
+    font-size: 0.68rem !important;
+    padding: 0 4px !important;
   }
 }
 
@@ -3691,6 +3993,53 @@ input, button, select, textarea {
     height: 26px !important;
     min-width: 26px !important;
     min-height: 26px !important;
+  }
+
+  /* Compact adaptive Order Details modal in landscape & tablet */
+  #modal-order-details .modal-card {
+    max-height: 95vh !important;
+  }
+  #modal-order-details .modal-header {
+    padding: 10px 14px !important;
+  }
+  #modal-order-details .modal-body {
+    padding: 10px 14px !important;
+    gap: 8px !important;
+  }
+  #modal-order-details .order-details-meta-grid {
+    padding: 6px 10px !important;
+    gap: 4px 8px !important;
+  }
+  #modal-order-details .order-details-summary-box {
+    padding: 8px 12px !important;
+    gap: 4px !important;
+  }
+  #modal-order-details .modal-footer {
+    padding: 8px 14px !important;
+  }
+}
+
+@media (max-height: 600px) {
+  #modal-order-details .modal-card {
+    max-height: 96vh !important;
+  }
+  #modal-order-details .modal-header {
+    padding: 8px 12px !important;
+  }
+  #modal-order-details .modal-body {
+    padding: 8px 12px !important;
+    gap: 6px !important;
+  }
+  #modal-order-details .order-details-meta-grid {
+    padding: 6px 8px !important;
+    gap: 3px 6px !important;
+  }
+  #modal-order-details .order-details-summary-box {
+    padding: 6px 10px !important;
+    gap: 3px !important;
+  }
+  #modal-order-details .modal-footer {
+    padding: 6px 12px !important;
   }
 }
 
@@ -4459,13 +4808,16 @@ input, button, select, textarea {
         <!-- Filter Tabs: Active Queue, Completed, Cancelled -->
         <div class="orders-filter-row">
           <button class="btn-tag-action active" id="filter-orders-active" data-filter="Pending">
-            <i class="fa-solid fa-clock"></i> Active Queue (<span id="count-filter-active">0</span>)
+            <span class="tab-label"><i class="fa-solid fa-fire-burner"></i> Active Queue</span>
+            <span class="tab-count-badge" id="count-filter-active">0</span>
           </button>
           <button class="btn-tag-action" id="filter-orders-completed" data-filter="Completed">
-            <i class="fa-solid fa-check-double"></i> Completed (<span id="count-filter-completed">0</span>)
+            <span class="tab-label"><i class="fa-solid fa-circle-check"></i> Completed</span>
+            <span class="tab-count-badge" id="count-filter-completed">0</span>
           </button>
           <button class="btn-tag-action" id="filter-orders-cancelled" data-filter="Cancelled">
-            <i class="fa-solid fa-ban"></i> Cancelled (<span id="count-filter-cancelled">0</span>)
+            <span class="tab-label"><i class="fa-solid fa-ban"></i> Cancelled</span>
+            <span class="tab-count-badge" id="count-filter-cancelled">0</span>
           </button>
         </div>
 
@@ -4510,7 +4862,7 @@ input, button, select, textarea {
         <button class="btn-close-modal" id="btn-close-order-details-modal">&times;</button>
       </div>
 
-      <div class="modal-body" style="gap: 12px; max-height: 70vh; overflow-y: auto;">
+      <div class="modal-body" style="gap: 12px;">
         <!-- Meta info banner -->
         <div class="order-details-meta-grid">
           <div class="order-details-meta-item">
@@ -6510,6 +6862,7 @@ function renderOrdersQueue() {
     container.innerHTML = '';
     if (emptyView) {
       emptyView.style.display = 'flex';
+      emptyView.classList.add('show');
       if (state.ordersFilter === 'Pending') {
         emptyTitle.textContent = 'No Active Orders';
         emptyDesc.textContent = 'All caught up! New orders placed at checkout will appear here for preparation and serving.';
@@ -6524,7 +6877,12 @@ function renderOrdersQueue() {
     return;
   }
 
-  if (emptyView) emptyView.style.display = 'none';
+  if (emptyView) {
+    emptyView.style.display = 'none';
+    emptyView.classList.remove('show');
+  }
+
+  container.classList.toggle('single-order', orders.length === 1);
 
   container.innerHTML = orders.map(ord => {
     const isPending = ord.status === 'Pending';
@@ -6532,46 +6890,107 @@ function renderOrdersQueue() {
     const isCompleted = ord.status === 'Completed';
 
     const statusClass = isPending ? 'status-pending' : (isCompleted ? 'status-completed' : 'status-cancelled');
-    const statusLabel = ord.status || 'Completed';
-    const totalQty = ord.items.reduce((sum, line) => sum + (line.qty || 1), 0);
+    const statusLabel = ord.status || 'Pending';
+    const totalQty = (ord.items || []).reduce((sum, line) => sum + (line.qty || 1), 0);
+
+    // Dining badge
+    const isTakeout = ord.diningType && ord.diningType.toLowerCase().includes('take');
+    const diningIcon = isTakeout ? 'fa-bag-shopping' : 'fa-utensils';
+    const tableInfo = ord.tableNum ? `(${escapeHtml(ord.tableNum)})` : '(Counter)';
+
+    // Payment icon
+    const payMethod = (ord.paymentMethod || 'Cash').toLowerCase();
+    const payIcon = payMethod.includes('gcash') ? 'fa-mobile-screen-button' : (payMethod.includes('card') ? 'fa-credit-card' : 'fa-money-bill-wave');
+
+    // Build items preview
+    const maxPreview = 3;
+    const previewItems = (ord.items || []).slice(0, maxPreview);
+    const overflowCount = (ord.items || []).length - maxPreview;
+
+    const itemsPreviewHtml = previewItems.map(line => {
+      const lineNote = line.note ? `<span class="order-queue-item-note" title="${escapeHtml(line.note)}"><i class="fa-solid fa-comment-dots"></i> ${escapeHtml(line.note)}</span>` : '';
+      return `
+        <div class="order-queue-item-row">
+          <div class="order-queue-item-left">
+            <span class="order-queue-item-qty">${line.qty}&times;</span>
+            <span class="order-queue-item-name">${escapeHtml(line.item.name)}</span>
+          </div>
+          ${lineNote}
+        </div>
+      `;
+    }).join('') + (overflowCount > 0 ? `
+      <div class="order-queue-overflow-tag">
+        <i class="fa-solid fa-ellipsis"></i> +${overflowCount} more item${overflowCount > 1 ? 's' : ''}
+      </div>
+    ` : '');
 
     return `
       <div class="order-queue-card ${statusClass}" data-order-id="${ord.id}">
+        <!-- Top Meta: Order Number, Dining Mode, Time, Status Pill -->
         <div class="order-queue-header">
           <div class="order-queue-meta">
-            <span class="order-queue-number">${ord.orderNumber}</span>
-            <span class="order-queue-type">
-              <i class="fa-solid fa-utensils"></i> ${escapeHtml(ord.diningType)} (${escapeHtml(ord.tableNum || 'Counter')})
-              <span class="order-queue-qty-badge">${totalQty} item${totalQty !== 1 ? 's' : ''}</span>
-            </span>
+            <div class="order-queue-title-row">
+              <span class="order-queue-number">${ord.orderNumber}</span>
+              <span class="order-queue-dining-tag ${isTakeout ? 'takeout' : ''}">
+                <i class="fa-solid ${diningIcon}"></i> ${escapeHtml(ord.diningType || 'Dine In')} ${tableInfo}
+              </span>
+            </div>
           </div>
           <div class="order-queue-status">
             <span class="order-time-tag"><i class="fa-regular fa-clock"></i> ${ord.time}</span>
-            <span class="order-status-pill ${statusClass}">${statusLabel}</span>
+            <span class="order-status-pill ${statusClass}">
+              <span class="status-pulse-dot"></span>
+              ${statusLabel}
+            </span>
           </div>
         </div>
 
+        <!-- Items Preview Box (Tablet Staff can immediately view dishes & notes) -->
+        <div class="order-queue-items-box" onclick="openOrderDetailsModal('${ord.id}')" title="Click to view full order details">
+          <div class="order-queue-items-header">
+            <span class="order-queue-items-title"><i class="fa-solid fa-list-check"></i> ${totalQty} Item${totalQty !== 1 ? 's' : ''}</span>
+            <span class="order-queue-tap-prompt">Details <i class="fa-solid fa-chevron-right"></i></span>
+          </div>
+          <div class="order-queue-items-list">
+            ${itemsPreviewHtml}
+          </div>
+        </div>
+
+        <!-- Total and Payment Summary -->
         <div class="order-queue-summary-row">
+          <span class="order-queue-paymethod">
+            <i class="fa-solid ${payIcon}"></i> ${escapeHtml(ord.paymentMethod || 'Cash')}
+          </span>
           <div class="order-queue-total">
-            <span>Total: <strong>${formatCurrency(ord.total)}</strong> <small>(${ord.paymentMethod})</small></span>
+            <span class="total-lbl">Total:</span>
+            <strong class="total-val">${formatCurrency(ord.total)}</strong>
           </div>
         </div>
 
+        <!-- Action Buttons (Generous Touch-Targets for Tablet) -->
         <div class="order-queue-footer">
           <div class="order-queue-actions">
-            <button class="btn-order-action view" onclick="openOrderDetailsModal('${ord.id}')" title="View Full Order Details & Items">
-              <i class="fa-solid fa-eye"></i> View Order
-            </button>
             ${isPending ? `
               <button class="btn-order-action cancel" onclick="cancelOrder('${ord.id}')" title="Cancel order and subtract from sales">
-                <i class="fa-solid fa-xmark"></i> Cancel
+                <i class="fa-solid fa-xmark"></i>
+                <span class="btn-text">Cancel</span>
+              </button>
+              <button class="btn-order-action view" onclick="openOrderDetailsModal('${ord.id}')" title="View Full Order Details & Items">
+                <i class="fa-solid fa-eye"></i>
+                <span class="btn-text">View</span>
               </button>
               <button class="btn-order-action complete" onclick="completeOrder('${ord.id}')" title="Mark order as completed">
-                <i class="fa-solid fa-check"></i> Complete
+                <i class="fa-solid fa-check"></i>
+                <span class="btn-text">Complete</span>
               </button>
             ` : `
+              <button class="btn-order-action view full-width" onclick="openOrderDetailsModal('${ord.id}')" title="View Full Order Details & Items">
+                <i class="fa-solid fa-eye"></i>
+                <span class="btn-text">View Details</span>
+              </button>
               <button class="btn-order-action receipt" onclick="reprintOrder('${ord.id}')" title="Print Thermal Receipt">
-                <i class="fa-solid fa-receipt"></i> Receipt
+                <i class="fa-solid fa-receipt"></i>
+                <span class="btn-text">Receipt</span>
               </button>
             `}
           </div>

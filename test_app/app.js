@@ -1596,6 +1596,7 @@ function renderOrdersQueue() {
     container.innerHTML = '';
     if (emptyView) {
       emptyView.style.display = 'flex';
+      emptyView.classList.add('show');
       if (state.ordersFilter === 'Pending') {
         emptyTitle.textContent = 'No Active Orders';
         emptyDesc.textContent = 'All caught up! New orders placed at checkout will appear here for preparation and serving.';
@@ -1610,7 +1611,12 @@ function renderOrdersQueue() {
     return;
   }
 
-  if (emptyView) emptyView.style.display = 'none';
+  if (emptyView) {
+    emptyView.style.display = 'none';
+    emptyView.classList.remove('show');
+  }
+
+  container.classList.toggle('single-order', orders.length === 1);
 
   container.innerHTML = orders.map(ord => {
     const isPending = ord.status === 'Pending';
@@ -1618,46 +1624,107 @@ function renderOrdersQueue() {
     const isCompleted = ord.status === 'Completed';
 
     const statusClass = isPending ? 'status-pending' : (isCompleted ? 'status-completed' : 'status-cancelled');
-    const statusLabel = ord.status || 'Completed';
-    const totalQty = ord.items.reduce((sum, line) => sum + (line.qty || 1), 0);
+    const statusLabel = ord.status || 'Pending';
+    const totalQty = (ord.items || []).reduce((sum, line) => sum + (line.qty || 1), 0);
+
+    // Dining badge
+    const isTakeout = ord.diningType && ord.diningType.toLowerCase().includes('take');
+    const diningIcon = isTakeout ? 'fa-bag-shopping' : 'fa-utensils';
+    const tableInfo = ord.tableNum ? `(${escapeHtml(ord.tableNum)})` : '(Counter)';
+
+    // Payment icon
+    const payMethod = (ord.paymentMethod || 'Cash').toLowerCase();
+    const payIcon = payMethod.includes('gcash') ? 'fa-mobile-screen-button' : (payMethod.includes('card') ? 'fa-credit-card' : 'fa-money-bill-wave');
+
+    // Build items preview
+    const maxPreview = 3;
+    const previewItems = (ord.items || []).slice(0, maxPreview);
+    const overflowCount = (ord.items || []).length - maxPreview;
+
+    const itemsPreviewHtml = previewItems.map(line => {
+      const lineNote = line.note ? `<span class="order-queue-item-note" title="${escapeHtml(line.note)}"><i class="fa-solid fa-comment-dots"></i> ${escapeHtml(line.note)}</span>` : '';
+      return `
+        <div class="order-queue-item-row">
+          <div class="order-queue-item-left">
+            <span class="order-queue-item-qty">${line.qty}&times;</span>
+            <span class="order-queue-item-name">${escapeHtml(line.item.name)}</span>
+          </div>
+          ${lineNote}
+        </div>
+      `;
+    }).join('') + (overflowCount > 0 ? `
+      <div class="order-queue-overflow-tag">
+        <i class="fa-solid fa-ellipsis"></i> +${overflowCount} more item${overflowCount > 1 ? 's' : ''}
+      </div>
+    ` : '');
 
     return `
       <div class="order-queue-card ${statusClass}" data-order-id="${ord.id}">
+        <!-- Top Meta: Order Number, Dining Mode, Time, Status Pill -->
         <div class="order-queue-header">
           <div class="order-queue-meta">
-            <span class="order-queue-number">${ord.orderNumber}</span>
-            <span class="order-queue-type">
-              <i class="fa-solid fa-utensils"></i> ${escapeHtml(ord.diningType)} (${escapeHtml(ord.tableNum || 'Counter')})
-              <span class="order-queue-qty-badge">${totalQty} item${totalQty !== 1 ? 's' : ''}</span>
-            </span>
+            <div class="order-queue-title-row">
+              <span class="order-queue-number">${ord.orderNumber}</span>
+              <span class="order-queue-dining-tag ${isTakeout ? 'takeout' : ''}">
+                <i class="fa-solid ${diningIcon}"></i> ${escapeHtml(ord.diningType || 'Dine In')} ${tableInfo}
+              </span>
+            </div>
           </div>
           <div class="order-queue-status">
             <span class="order-time-tag"><i class="fa-regular fa-clock"></i> ${ord.time}</span>
-            <span class="order-status-pill ${statusClass}">${statusLabel}</span>
+            <span class="order-status-pill ${statusClass}">
+              <span class="status-pulse-dot"></span>
+              ${statusLabel}
+            </span>
           </div>
         </div>
 
+        <!-- Items Preview Box (Tablet Staff can immediately view dishes & notes) -->
+        <div class="order-queue-items-box" onclick="openOrderDetailsModal('${ord.id}')" title="Click to view full order details">
+          <div class="order-queue-items-header">
+            <span class="order-queue-items-title"><i class="fa-solid fa-list-check"></i> ${totalQty} Item${totalQty !== 1 ? 's' : ''}</span>
+            <span class="order-queue-tap-prompt">Details <i class="fa-solid fa-chevron-right"></i></span>
+          </div>
+          <div class="order-queue-items-list">
+            ${itemsPreviewHtml}
+          </div>
+        </div>
+
+        <!-- Total and Payment Summary -->
         <div class="order-queue-summary-row">
+          <span class="order-queue-paymethod">
+            <i class="fa-solid ${payIcon}"></i> ${escapeHtml(ord.paymentMethod || 'Cash')}
+          </span>
           <div class="order-queue-total">
-            <span>Total: <strong>${formatCurrency(ord.total)}</strong> <small>(${ord.paymentMethod})</small></span>
+            <span class="total-lbl">Total:</span>
+            <strong class="total-val">${formatCurrency(ord.total)}</strong>
           </div>
         </div>
 
+        <!-- Action Buttons (Generous Touch-Targets for Tablet) -->
         <div class="order-queue-footer">
           <div class="order-queue-actions">
-            <button class="btn-order-action view" onclick="openOrderDetailsModal('${ord.id}')" title="View Full Order Details & Items">
-              <i class="fa-solid fa-eye"></i> View Order
-            </button>
             ${isPending ? `
               <button class="btn-order-action cancel" onclick="cancelOrder('${ord.id}')" title="Cancel order and subtract from sales">
-                <i class="fa-solid fa-xmark"></i> Cancel
+                <i class="fa-solid fa-xmark"></i>
+                <span class="btn-text">Cancel</span>
+              </button>
+              <button class="btn-order-action view" onclick="openOrderDetailsModal('${ord.id}')" title="View Full Order Details & Items">
+                <i class="fa-solid fa-eye"></i>
+                <span class="btn-text">View</span>
               </button>
               <button class="btn-order-action complete" onclick="completeOrder('${ord.id}')" title="Mark order as completed">
-                <i class="fa-solid fa-check"></i> Complete
+                <i class="fa-solid fa-check"></i>
+                <span class="btn-text">Complete</span>
               </button>
             ` : `
+              <button class="btn-order-action view full-width" onclick="openOrderDetailsModal('${ord.id}')" title="View Full Order Details & Items">
+                <i class="fa-solid fa-eye"></i>
+                <span class="btn-text">View Details</span>
+              </button>
               <button class="btn-order-action receipt" onclick="reprintOrder('${ord.id}')" title="Print Thermal Receipt">
-                <i class="fa-solid fa-receipt"></i> Receipt
+                <i class="fa-solid fa-receipt"></i>
+                <span class="btn-text">Receipt</span>
               </button>
             `}
           </div>

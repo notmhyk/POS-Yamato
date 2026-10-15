@@ -616,13 +616,16 @@
         <!-- Filter Tabs: Active Queue, Completed, Cancelled -->
         <div class="orders-filter-row">
           <button class="btn-tag-action active" id="filter-orders-active" data-filter="Pending">
-            <i class="fa-solid fa-clock"></i> Active Queue (<span id="count-filter-active">0</span>)
+            <span class="tab-label"><i class="fa-solid fa-fire-burner"></i> Active Queue</span>
+            <span class="tab-count-badge" id="count-filter-active">0</span>
           </button>
           <button class="btn-tag-action" id="filter-orders-completed" data-filter="Completed">
-            <i class="fa-solid fa-check-double"></i> Completed (<span id="count-filter-completed">0</span>)
+            <span class="tab-label"><i class="fa-solid fa-circle-check"></i> Completed</span>
+            <span class="tab-count-badge" id="count-filter-completed">0</span>
           </button>
           <button class="btn-tag-action" id="filter-orders-cancelled" data-filter="Cancelled">
-            <i class="fa-solid fa-ban"></i> Cancelled (<span id="count-filter-cancelled">0</span>)
+            <span class="tab-label"><i class="fa-solid fa-ban"></i> Cancelled</span>
+            <span class="tab-count-badge" id="count-filter-cancelled">0</span>
           </button>
         </div>
 
@@ -667,7 +670,7 @@
         <button class="btn-close-modal" id="btn-close-order-details-modal">&times;</button>
       </div>
 
-      <div class="modal-body" style="gap: 12px; max-height: 70vh; overflow-y: auto;">
+      <div class="modal-body" style="gap: 12px;">
         <!-- Meta info banner -->
         <div class="order-details-meta-grid">
           <div class="order-details-meta-item">
