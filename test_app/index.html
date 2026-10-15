@@ -13,7 +13,7 @@
 
   <!-- Google Fonts & Font Awesome Icons (100% Offline Local Bundle) -->
   <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=30">
+  <link rel="stylesheet" href="style.css?v=31">
 </head>
 <body>
 
@@ -38,19 +38,37 @@
           <span class="live-dot"></span>
           <span id="pos-live-clock">--:--:--</span>
         </div>
+
+        <!-- Cashier Shift & Profile Indicator -->
+        <div class="header-cashier-pill" id="header-cashier-pill" title="Current Cashier Shift">
+          <i class="fa-solid fa-circle-user cashier-avatar-icon"></i>
+          <div class="cashier-info">
+            <span class="cashier-role-badge" id="header-user-role">Staff</span>
+            <span class="cashier-name" id="header-cashier-name">Mhyk Magdangal</span>
+          </div>
+          <button type="button" class="btn-cashier-logout" id="btn-cashier-logout" title="Switch User / Logout">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          </button>
+        </div>
       </div>
 
       <div class="header-actions">
-        <!-- Add / Manage Menu Item Button -->
-        <button class="btn-nav-action" id="btn-open-add-item" title="Add New Item to Menu">
+        <!-- Add / Manage Menu Item Button (Admin Only) -->
+        <button class="btn-nav-action admin-only-ui" id="btn-open-add-item" title="Add New Item to Menu">
           <i class="fa-solid fa-circle-plus" style="color: var(--primary-red);"></i>
           <span>Add Item</span>
         </button>
 
-        <!-- Manage Mode Toggle -->
-        <button class="btn-nav-action" id="btn-toggle-manage-mode" title="Toggle Edit/Delete Mode on Catalog">
+        <!-- Manage Mode Toggle (Admin Only) -->
+        <button class="btn-nav-action admin-only-ui" id="btn-toggle-manage-mode" title="Toggle Edit/Delete Mode on Catalog">
           <i class="fa-solid fa-pen-to-square"></i>
           <span id="manage-mode-label">Edit Menu</span>
+        </button>
+
+        <!-- Staff / Employee Accounts Management (Admin Only) -->
+        <button class="btn-nav-action admin-only-ui" id="btn-open-staff-mgmt" title="Manage Staff Accounts (Admin Only)">
+          <i class="fa-solid fa-users-gear" style="color: var(--accent-gold);"></i>
+          <span>Staff</span>
         </button>
 
         <!-- Current / Active Orders Queue -->
@@ -480,6 +498,9 @@
               <span id="receipt-dining-type">DINE IN (Table 1)</span>
               <span id="receipt-pay-method">CASH</span>
             </div>
+            <div class="receipt-meta-row">
+              <span id="receipt-cashier-name">Cashier: Mhyk Magdangal</span>
+            </div>
 
             <div class="receipt-divider"></div>
 
@@ -542,6 +563,7 @@
               <div class="kitchen-order-number" id="kitchen-order-id">ORDER #0001</div>
               <div>
                 <span class="kitchen-meta-pill" id="kitchen-dining-type">DINE IN (Table 1)</span>
+                <span class="kitchen-meta-pill" id="kitchen-cashier-name">Cashier: Mhyk Magdangal</span>
               </div>
               <div class="kitchen-meta-sub" id="kitchen-date-time">2026-10-01 21:35</div>
             </div>
@@ -688,6 +710,10 @@
           <div class="order-details-meta-item">
             <span class="meta-label">Total Items</span>
             <span class="meta-val" id="order-details-count">0 items</span>
+          </div>
+          <div class="order-details-meta-item">
+            <span class="meta-label">Cashier</span>
+            <span class="meta-val" id="order-details-cashier">--</span>
           </div>
         </div>
 
@@ -1065,10 +1091,186 @@
     </div>
   </div>
 
+  <!-- ====================================================================
+       MODAL: CASHIER & ADMIN TERMINAL LOGIN
+       ==================================================================== -->
+  <div class="modal-overlay login-overlay" id="modal-login">
+    <div class="modal-card modal-login-card">
+      <div class="login-brand-header">
+        <img src="assets/logo.png" alt="Yamato Shokudo Logo" class="login-logo-img">
+        <h2 class="login-brand-title"><span class="red-char">Y</span>amato <span class="red-char">S</span>hokudō</h2>
+        <div class="login-sub-title">Authentic Japanese Comfort Food • POS Terminal</div>
+      </div>
+
+      <div class="modal-body login-modal-body">
+        <div class="login-instruction-pill">
+          <i class="fa-solid fa-cash-register"></i>
+          <span>Select cashier shift or enter login credentials</span>
+        </div>
+
+        <!-- Quick Switcher Chips -->
+        <div class="login-quick-chips" id="login-quick-chips">
+          <!-- Dynamically populated cashier chips -->
+        </div>
+
+        <form id="login-form" class="login-form" onsubmit="return false;">
+          <div class="form-group">
+            <label class="form-label" for="login-username">Cashier / Username</label>
+            <div class="login-input-wrap">
+              <i class="fa-solid fa-user login-field-icon"></i>
+              <input type="text" id="login-username" class="form-input login-input" placeholder="e.g. Mhyk Magdangal or admin" autocomplete="username" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="login-password">Password</label>
+            <div class="login-input-wrap">
+              <i class="fa-solid fa-lock login-field-icon"></i>
+              <input type="password" id="login-password" class="form-input login-input" placeholder="Enter password" autocomplete="current-password" required>
+              <button type="button" class="btn-toggle-password" id="btn-toggle-login-pass" title="Toggle Show Password">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="login-error-box" id="login-error-box" style="display: none;">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span id="login-error-text">Invalid username or password.</span>
+          </div>
+
+          <button type="button" class="btn-login-submit" id="btn-submit-login">
+            <i class="fa-solid fa-arrow-right-to-bracket"></i>
+            <span>Login to Terminal</span>
+          </button>
+        </form>
+
+        <div class="login-footer-hint">
+          <span><i class="fa-solid fa-shield-halved"></i> Role-based access control enabled</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL: ADMIN AUTHORIZATION PROMPT (DISCOUNT & ORDER CANCELLATION)
+       ==================================================================== -->
+  <div class="modal-overlay" id="modal-admin-auth">
+    <div class="modal-card" style="max-width: 440px; width: 95%;">
+      <div class="modal-header">
+        <h3 class="modal-title" style="color: var(--accent-gold);">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span id="admin-auth-title">Admin Approval Required</span>
+        </h3>
+        <button class="btn-close-modal" id="btn-close-admin-auth">&times;</button>
+      </div>
+
+      <div class="modal-body" style="gap: 12px;">
+        <div class="admin-auth-reason-banner">
+          <i class="fa-solid fa-circle-info"></i>
+          <span id="admin-auth-reason">Manager authorization is required to proceed with this action.</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="admin-auth-user">Admin Account</label>
+          <input type="text" id="admin-auth-user" class="form-input" value="admin" readonly style="opacity: 0.85;">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="admin-auth-password">Admin Password *</label>
+          <div class="login-input-wrap">
+            <i class="fa-solid fa-lock login-field-icon"></i>
+            <input type="password" id="admin-auth-password" class="form-input login-input" placeholder="Enter admin password" autocomplete="current-password">
+            <button type="button" class="btn-toggle-password" id="btn-toggle-auth-pass" title="Toggle Show Password">
+              <i class="fa-regular fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="login-error-box" id="admin-auth-error" style="display: none;">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <span id="admin-auth-error-text">Invalid Admin Password.</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-modal-action" id="btn-cancel-admin-auth">Cancel</button>
+        <button type="button" class="btn-modal-action primary" id="btn-confirm-admin-auth">
+          <i class="fa-solid fa-check-double"></i>
+          Authorize
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL: STAFF & EMPLOYEE MANAGEMENT (ADMIN ONLY)
+       ==================================================================== -->
+  <div class="modal-overlay" id="modal-staff">
+    <div class="modal-card" style="max-width: 580px; width: 95%;">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fa-solid fa-users-gear" style="color: var(--accent-gold);"></i>
+          Staff & Cashier Accounts
+        </h3>
+        <button class="btn-close-modal" id="btn-close-staff-modal">&times;</button>
+      </div>
+
+      <div class="modal-body" style="gap: 16px; max-height: 75vh; overflow-y: auto;">
+        <!-- Create Employee Account Box -->
+        <div class="staff-create-box">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <h4 style="font-size: 0.88rem; color: var(--text-white); margin: 0; display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-user-plus" style="color: var(--primary-red);"></i>
+              Create Employee Account
+            </h4>
+            <span class="role-badge staff">Employee Role</span>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 8px;">
+            <label class="form-label" for="new-employee-name">Employee Full Name *</label>
+            <input type="text" id="new-employee-name" class="form-input" placeholder="e.g. Maria Santos" required>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="new-employee-username">Username / Login ID *</label>
+              <input type="text" id="new-employee-username" class="form-input" placeholder="e.g. maria" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="new-employee-password">Password *</label>
+              <input type="text" id="new-employee-password" class="form-input" placeholder="e.g. employee123" required>
+            </div>
+          </div>
+
+          <button type="button" class="btn-modal-action primary" id="btn-create-employee" style="width: 100%; justify-content: center; margin-top: 4px;">
+            <i class="fa-solid fa-user-plus"></i>
+            Create Employee Account
+          </button>
+        </div>
+
+        <!-- Current Accounts List -->
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <label class="form-label" style="margin-bottom: 0;">Active Terminal Accounts</label>
+            <span style="font-size: 0.75rem; color: var(--text-muted);" id="staff-accounts-count">2 Accounts</span>
+          </div>
+
+          <div class="staff-accounts-list" id="staff-accounts-list">
+            <!-- Dynamically populated user rows -->
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-modal-action primary" id="btn-close-staff-btn" style="width: 100%; justify-content: center;">Done</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Main JavaScript App -->
-  <script src="app.js?v=30"></script>
+  <script src="app.js?v=31"></script>
 </body>
 </html>

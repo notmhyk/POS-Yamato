@@ -4188,3 +4188,401 @@ input, button, select, textarea {
   outline: none;
 }
 
+/* ==========================================================================
+   CASHIER SHIFT PILL & HEADER USER BADGE
+   ========================================================================== */
+.header-cashier-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  padding: 3px 8px 3px 10px;
+  border-radius: var(--radius-full);
+  height: 32px;
+  transition: var(--transition-fast);
+  margin-left: 6px;
+}
+
+.header-cashier-pill:hover {
+  border-color: rgba(229, 37, 42, 0.4);
+}
+
+.cashier-avatar-icon {
+  font-size: 1.1rem;
+  color: var(--accent-gold);
+}
+
+.cashier-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.1;
+}
+
+.cashier-role-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--accent-green);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.cashier-role-badge.admin {
+  background: rgba(245, 158, 11, 0.18);
+  color: var(--accent-gold);
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+.cashier-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-white);
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-cashier-logout {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+  margin-left: 2px;
+}
+
+.btn-cashier-logout:hover {
+  color: var(--primary-red);
+  background: rgba(229, 37, 42, 0.15);
+}
+
+/* ==========================================================================
+   AUTHENTICATION & LOGIN MODAL
+   ========================================================================== */
+.login-overlay {
+  z-index: 10000 !important;
+  background: rgba(10, 9, 14, 0.88) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+}
+
+.modal-login-card {
+  max-width: 420px;
+  width: 95%;
+  background: linear-gradient(180deg, #1A1924 0%, #13121A 100%);
+  border: 1px solid rgba(229, 37, 42, 0.35);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(229, 37, 42, 0.15);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  animation: modalPopIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.login-brand-header {
+  padding: 22px 20px 14px;
+  text-align: center;
+  background: radial-gradient(circle at 50% 0%, rgba(229, 37, 42, 0.2) 0%, transparent 70%);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.login-logo-img {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  object-fit: contain;
+  margin-bottom: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+.login-brand-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text-white);
+  letter-spacing: 0.5px;
+  margin: 0 0 4px;
+}
+
+.login-sub-title {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.login-modal-body {
+  padding: 16px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login-instruction-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed var(--border-color);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+}
+
+.login-quick-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.quick-chip-btn {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-white);
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.quick-chip-btn:hover {
+  border-color: var(--primary-red);
+  background: rgba(229, 37, 42, 0.1);
+  transform: translateY(-1px);
+}
+
+.quick-chip-btn.active {
+  border-color: var(--primary-red);
+  background: rgba(229, 37, 42, 0.18);
+  box-shadow: 0 0 10px rgba(229, 37, 42, 0.3);
+}
+
+.login-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.login-field-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  pointer-events: none;
+}
+
+.login-input {
+  padding-left: 36px !important;
+  padding-right: 40px !important;
+  height: 40px !important;
+  font-size: 0.9rem !important;
+  background: var(--bg-deep) !important;
+  border-radius: var(--radius-md) !important;
+}
+
+.btn-toggle-password {
+  position: absolute;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 6px;
+  font-size: 0.88rem;
+}
+
+.btn-toggle-password:hover {
+  color: var(--text-white);
+}
+
+.btn-login-submit {
+  width: 100%;
+  height: 42px;
+  background: var(--primary-red);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-md);
+  color: #FFF;
+  font-size: 0.9rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(229, 37, 42, 0.4);
+  transition: var(--transition-fast);
+  margin-top: 4px;
+}
+
+.btn-login-submit:hover {
+  background: var(--primary-red-hover);
+  transform: translateY(-1px);
+}
+
+.login-error-box {
+  background: rgba(229, 37, 42, 0.14);
+  border: 1px solid rgba(229, 37, 42, 0.4);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  color: #FFA4A6;
+  font-size: 0.78rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.login-footer-hint {
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ==========================================================================
+   ADMIN AUTHORIZATION MODAL
+   ========================================================================== */
+.admin-auth-reason-banner {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  color: var(--accent-gold);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* ==========================================================================
+   STAFF MANAGEMENT MODAL
+   ========================================================================== */
+.staff-create-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 14px;
+}
+
+.staff-accounts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.staff-account-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  transition: var(--transition-fast);
+}
+
+.staff-account-card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.staff-account-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.staff-account-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.staff-account-name {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text-white);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.staff-account-user {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.role-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.role-badge.admin {
+  background: rgba(245, 158, 11, 0.18);
+  color: var(--accent-gold);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.role-badge.staff {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--accent-green);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.btn-del-staff {
+  background: rgba(229, 37, 42, 0.1);
+  border: 1px solid rgba(229, 37, 42, 0.3);
+  color: var(--primary-red-light);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+}
+
+.btn-del-staff:hover {
+  background: var(--primary-red);
+  color: #FFF;
+}
+
+/* ==========================================================================
+   RESPONSIVE ADJUSTMENTS FOR CASHIER BADGE
+   ========================================================================== */
+@media (max-width: 992px) {
+  .header-cashier-pill .cashier-name {
+    max-width: 90px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-cashier-pill .cashier-name {
+    display: none;
+  }
+  .header-cashier-pill {
+    padding: 3px 6px;
+    gap: 5px;
+  }
+}
+

@@ -4204,6 +4204,404 @@ input, button, select, textarea {
   outline: none;
 }
 
+/* ==========================================================================
+   CASHIER SHIFT PILL & HEADER USER BADGE
+   ========================================================================== */
+.header-cashier-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  padding: 3px 8px 3px 10px;
+  border-radius: var(--radius-full);
+  height: 32px;
+  transition: var(--transition-fast);
+  margin-left: 6px;
+}
+
+.header-cashier-pill:hover {
+  border-color: rgba(229, 37, 42, 0.4);
+}
+
+.cashier-avatar-icon {
+  font-size: 1.1rem;
+  color: var(--accent-gold);
+}
+
+.cashier-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.1;
+}
+
+.cashier-role-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--accent-green);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.cashier-role-badge.admin {
+  background: rgba(245, 158, 11, 0.18);
+  color: var(--accent-gold);
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+.cashier-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-white);
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-cashier-logout {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+  margin-left: 2px;
+}
+
+.btn-cashier-logout:hover {
+  color: var(--primary-red);
+  background: rgba(229, 37, 42, 0.15);
+}
+
+/* ==========================================================================
+   AUTHENTICATION & LOGIN MODAL
+   ========================================================================== */
+.login-overlay {
+  z-index: 10000 !important;
+  background: rgba(10, 9, 14, 0.88) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+}
+
+.modal-login-card {
+  max-width: 420px;
+  width: 95%;
+  background: linear-gradient(180deg, #1A1924 0%, #13121A 100%);
+  border: 1px solid rgba(229, 37, 42, 0.35);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(229, 37, 42, 0.15);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  animation: modalPopIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.login-brand-header {
+  padding: 22px 20px 14px;
+  text-align: center;
+  background: radial-gradient(circle at 50% 0%, rgba(229, 37, 42, 0.2) 0%, transparent 70%);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.login-logo-img {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  object-fit: contain;
+  margin-bottom: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+.login-brand-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text-white);
+  letter-spacing: 0.5px;
+  margin: 0 0 4px;
+}
+
+.login-sub-title {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.login-modal-body {
+  padding: 16px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login-instruction-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed var(--border-color);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+}
+
+.login-quick-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.quick-chip-btn {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-white);
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.quick-chip-btn:hover {
+  border-color: var(--primary-red);
+  background: rgba(229, 37, 42, 0.1);
+  transform: translateY(-1px);
+}
+
+.quick-chip-btn.active {
+  border-color: var(--primary-red);
+  background: rgba(229, 37, 42, 0.18);
+  box-shadow: 0 0 10px rgba(229, 37, 42, 0.3);
+}
+
+.login-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.login-field-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  pointer-events: none;
+}
+
+.login-input {
+  padding-left: 36px !important;
+  padding-right: 40px !important;
+  height: 40px !important;
+  font-size: 0.9rem !important;
+  background: var(--bg-deep) !important;
+  border-radius: var(--radius-md) !important;
+}
+
+.btn-toggle-password {
+  position: absolute;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 6px;
+  font-size: 0.88rem;
+}
+
+.btn-toggle-password:hover {
+  color: var(--text-white);
+}
+
+.btn-login-submit {
+  width: 100%;
+  height: 42px;
+  background: var(--primary-red);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-md);
+  color: #FFF;
+  font-size: 0.9rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(229, 37, 42, 0.4);
+  transition: var(--transition-fast);
+  margin-top: 4px;
+}
+
+.btn-login-submit:hover {
+  background: var(--primary-red-hover);
+  transform: translateY(-1px);
+}
+
+.login-error-box {
+  background: rgba(229, 37, 42, 0.14);
+  border: 1px solid rgba(229, 37, 42, 0.4);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  color: #FFA4A6;
+  font-size: 0.78rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.login-footer-hint {
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ==========================================================================
+   ADMIN AUTHORIZATION MODAL
+   ========================================================================== */
+.admin-auth-reason-banner {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  color: var(--accent-gold);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* ==========================================================================
+   STAFF MANAGEMENT MODAL
+   ========================================================================== */
+.staff-create-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 14px;
+}
+
+.staff-accounts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.staff-account-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  transition: var(--transition-fast);
+}
+
+.staff-account-card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.staff-account-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.staff-account-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.staff-account-name {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text-white);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.staff-account-user {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.role-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.role-badge.admin {
+  background: rgba(245, 158, 11, 0.18);
+  color: var(--accent-gold);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.role-badge.staff {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--accent-green);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.btn-del-staff {
+  background: rgba(229, 37, 42, 0.1);
+  border: 1px solid rgba(229, 37, 42, 0.3);
+  color: var(--primary-red-light);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+}
+
+.btn-del-staff:hover {
+  background: var(--primary-red);
+  color: #FFF;
+}
+
+/* ==========================================================================
+   RESPONSIVE ADJUSTMENTS FOR CASHIER BADGE
+   ========================================================================== */
+@media (max-width: 992px) {
+  .header-cashier-pill .cashier-name {
+    max-width: 90px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-cashier-pill .cashier-name {
+    display: none;
+  }
+  .header-cashier-pill {
+    padding: 3px 6px;
+    gap: 5px;
+  }
+}
+
 
 </style>
 </head>
@@ -4230,19 +4628,37 @@ input, button, select, textarea {
           <span class="live-dot"></span>
           <span id="pos-live-clock">--:--:--</span>
         </div>
+
+        <!-- Cashier Shift & Profile Indicator -->
+        <div class="header-cashier-pill" id="header-cashier-pill" title="Current Cashier Shift">
+          <i class="fa-solid fa-circle-user cashier-avatar-icon"></i>
+          <div class="cashier-info">
+            <span class="cashier-role-badge" id="header-user-role">Staff</span>
+            <span class="cashier-name" id="header-cashier-name">Mhyk Magdangal</span>
+          </div>
+          <button type="button" class="btn-cashier-logout" id="btn-cashier-logout" title="Switch User / Logout">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          </button>
+        </div>
       </div>
 
       <div class="header-actions">
-        <!-- Add / Manage Menu Item Button -->
-        <button class="btn-nav-action" id="btn-open-add-item" title="Add New Item to Menu">
+        <!-- Add / Manage Menu Item Button (Admin Only) -->
+        <button class="btn-nav-action admin-only-ui" id="btn-open-add-item" title="Add New Item to Menu">
           <i class="fa-solid fa-circle-plus" style="color: var(--primary-red);"></i>
           <span>Add Item</span>
         </button>
 
-        <!-- Manage Mode Toggle -->
-        <button class="btn-nav-action" id="btn-toggle-manage-mode" title="Toggle Edit/Delete Mode on Catalog">
+        <!-- Manage Mode Toggle (Admin Only) -->
+        <button class="btn-nav-action admin-only-ui" id="btn-toggle-manage-mode" title="Toggle Edit/Delete Mode on Catalog">
           <i class="fa-solid fa-pen-to-square"></i>
           <span id="manage-mode-label">Edit Menu</span>
+        </button>
+
+        <!-- Staff / Employee Accounts Management (Admin Only) -->
+        <button class="btn-nav-action admin-only-ui" id="btn-open-staff-mgmt" title="Manage Staff Accounts (Admin Only)">
+          <i class="fa-solid fa-users-gear" style="color: var(--accent-gold);"></i>
+          <span>Staff</span>
         </button>
 
         <!-- Current / Active Orders Queue -->
@@ -4672,6 +5088,9 @@ input, button, select, textarea {
               <span id="receipt-dining-type">DINE IN (Table 1)</span>
               <span id="receipt-pay-method">CASH</span>
             </div>
+            <div class="receipt-meta-row">
+              <span id="receipt-cashier-name">Cashier: Mhyk Magdangal</span>
+            </div>
 
             <div class="receipt-divider"></div>
 
@@ -4734,6 +5153,7 @@ input, button, select, textarea {
               <div class="kitchen-order-number" id="kitchen-order-id">ORDER #0001</div>
               <div>
                 <span class="kitchen-meta-pill" id="kitchen-dining-type">DINE IN (Table 1)</span>
+                <span class="kitchen-meta-pill" id="kitchen-cashier-name">Cashier: Mhyk Magdangal</span>
               </div>
               <div class="kitchen-meta-sub" id="kitchen-date-time">2026-10-01 21:35</div>
             </div>
@@ -4880,6 +5300,10 @@ input, button, select, textarea {
           <div class="order-details-meta-item">
             <span class="meta-label">Total Items</span>
             <span class="meta-val" id="order-details-count">0 items</span>
+          </div>
+          <div class="order-details-meta-item">
+            <span class="meta-label">Cashier</span>
+            <span class="meta-val" id="order-details-cashier">--</span>
           </div>
         </div>
 
@@ -5257,6 +5681,182 @@ input, button, select, textarea {
     </div>
   </div>
 
+  <!-- ====================================================================
+       MODAL: CASHIER & ADMIN TERMINAL LOGIN
+       ==================================================================== -->
+  <div class="modal-overlay login-overlay" id="modal-login">
+    <div class="modal-card modal-login-card">
+      <div class="login-brand-header">
+        <img src="assets/logo.png" alt="Yamato Shokudo Logo" class="login-logo-img">
+        <h2 class="login-brand-title"><span class="red-char">Y</span>amato <span class="red-char">S</span>hokudō</h2>
+        <div class="login-sub-title">Authentic Japanese Comfort Food • POS Terminal</div>
+      </div>
+
+      <div class="modal-body login-modal-body">
+        <div class="login-instruction-pill">
+          <i class="fa-solid fa-cash-register"></i>
+          <span>Select cashier shift or enter login credentials</span>
+        </div>
+
+        <!-- Quick Switcher Chips -->
+        <div class="login-quick-chips" id="login-quick-chips">
+          <!-- Dynamically populated cashier chips -->
+        </div>
+
+        <form id="login-form" class="login-form" onsubmit="return false;">
+          <div class="form-group">
+            <label class="form-label" for="login-username">Cashier / Username</label>
+            <div class="login-input-wrap">
+              <i class="fa-solid fa-user login-field-icon"></i>
+              <input type="text" id="login-username" class="form-input login-input" placeholder="e.g. Mhyk Magdangal or admin" autocomplete="username" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="login-password">Password</label>
+            <div class="login-input-wrap">
+              <i class="fa-solid fa-lock login-field-icon"></i>
+              <input type="password" id="login-password" class="form-input login-input" placeholder="Enter password" autocomplete="current-password" required>
+              <button type="button" class="btn-toggle-password" id="btn-toggle-login-pass" title="Toggle Show Password">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="login-error-box" id="login-error-box" style="display: none;">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span id="login-error-text">Invalid username or password.</span>
+          </div>
+
+          <button type="button" class="btn-login-submit" id="btn-submit-login">
+            <i class="fa-solid fa-arrow-right-to-bracket"></i>
+            <span>Login to Terminal</span>
+          </button>
+        </form>
+
+        <div class="login-footer-hint">
+          <span><i class="fa-solid fa-shield-halved"></i> Role-based access control enabled</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL: ADMIN AUTHORIZATION PROMPT (DISCOUNT & ORDER CANCELLATION)
+       ==================================================================== -->
+  <div class="modal-overlay" id="modal-admin-auth">
+    <div class="modal-card" style="max-width: 440px; width: 95%;">
+      <div class="modal-header">
+        <h3 class="modal-title" style="color: var(--accent-gold);">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span id="admin-auth-title">Admin Approval Required</span>
+        </h3>
+        <button class="btn-close-modal" id="btn-close-admin-auth">&times;</button>
+      </div>
+
+      <div class="modal-body" style="gap: 12px;">
+        <div class="admin-auth-reason-banner">
+          <i class="fa-solid fa-circle-info"></i>
+          <span id="admin-auth-reason">Manager authorization is required to proceed with this action.</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="admin-auth-user">Admin Account</label>
+          <input type="text" id="admin-auth-user" class="form-input" value="admin" readonly style="opacity: 0.85;">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="admin-auth-password">Admin Password *</label>
+          <div class="login-input-wrap">
+            <i class="fa-solid fa-lock login-field-icon"></i>
+            <input type="password" id="admin-auth-password" class="form-input login-input" placeholder="Enter admin password" autocomplete="current-password">
+            <button type="button" class="btn-toggle-password" id="btn-toggle-auth-pass" title="Toggle Show Password">
+              <i class="fa-regular fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="login-error-box" id="admin-auth-error" style="display: none;">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <span id="admin-auth-error-text">Invalid Admin Password.</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-modal-action" id="btn-cancel-admin-auth">Cancel</button>
+        <button type="button" class="btn-modal-action primary" id="btn-confirm-admin-auth">
+          <i class="fa-solid fa-check-double"></i>
+          Authorize
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL: STAFF & EMPLOYEE MANAGEMENT (ADMIN ONLY)
+       ==================================================================== -->
+  <div class="modal-overlay" id="modal-staff">
+    <div class="modal-card" style="max-width: 580px; width: 95%;">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fa-solid fa-users-gear" style="color: var(--accent-gold);"></i>
+          Staff & Cashier Accounts
+        </h3>
+        <button class="btn-close-modal" id="btn-close-staff-modal">&times;</button>
+      </div>
+
+      <div class="modal-body" style="gap: 16px; max-height: 75vh; overflow-y: auto;">
+        <!-- Create Employee Account Box -->
+        <div class="staff-create-box">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <h4 style="font-size: 0.88rem; color: var(--text-white); margin: 0; display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-user-plus" style="color: var(--primary-red);"></i>
+              Create Employee Account
+            </h4>
+            <span class="role-badge staff">Employee Role</span>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 8px;">
+            <label class="form-label" for="new-employee-name">Employee Full Name *</label>
+            <input type="text" id="new-employee-name" class="form-input" placeholder="e.g. Maria Santos" required>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="new-employee-username">Username / Login ID *</label>
+              <input type="text" id="new-employee-username" class="form-input" placeholder="e.g. maria" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="new-employee-password">Password *</label>
+              <input type="text" id="new-employee-password" class="form-input" placeholder="e.g. employee123" required>
+            </div>
+          </div>
+
+          <button type="button" class="btn-modal-action primary" id="btn-create-employee" style="width: 100%; justify-content: center; margin-top: 4px;">
+            <i class="fa-solid fa-user-plus"></i>
+            Create Employee Account
+          </button>
+        </div>
+
+        <!-- Current Accounts List -->
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <label class="form-label" style="margin-bottom: 0;">Active Terminal Accounts</label>
+            <span style="font-size: 0.75rem; color: var(--text-muted);" id="staff-accounts-count">2 Accounts</span>
+          </div>
+
+          <div class="staff-accounts-list" id="staff-accounts-list">
+            <!-- Dynamically populated user rows -->
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-modal-action primary" id="btn-close-staff-btn" style="width: 100%; justify-content: center;">Done</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toast-container"></div>
 
@@ -5417,6 +6017,26 @@ const DEFAULT_DISCOUNTS = [
   { id: 'disc-vip', name: 'Loyalty / VIP', percent: 5 }
 ];
 
+// Default User & Cashier Accounts
+const DEFAULT_USERS = [
+  {
+    id: 'usr-admin',
+    username: 'admin',
+    name: 'Admin',
+    role: 'admin',
+    password: 'admin123',
+    createdAt: 'System'
+  },
+  {
+    id: 'usr-mhyk',
+    username: 'mhyk',
+    name: 'Mhyk Magdangal',
+    role: 'employee',
+    password: 'employee123',
+    createdAt: 'System'
+  }
+];
+
 // Optional Pre-configured Default Google Sheets Webhook URL
 // (If you put your Webhook URL here, it will be automatically built-in for every new device/tablet installation)
 const DEFAULT_GSHEET_URL = 'https://script.google.com/macros/s/AKfycbytQIVGsuv9v9WtPpVYK3X0wC36tiv4WIBtFwoMg_ORtfePrzmKqiQ-QBEyaz5GLYBEmA/exec';
@@ -5424,6 +6044,9 @@ const DEFAULT_GSHEET_URL = 'https://script.google.com/macros/s/AKfycbytQIVGsuv9v
 // App State
 class PosState {
   constructor() {
+    this.users = this.loadUsers();
+    this.currentUser = null;
+    this.adminAuthCallback = null;
     this.customCategories = this.loadCategories();
     this.customDiscounts = this.loadDiscounts();
     this.catalog = this.loadCatalog();
@@ -5565,6 +6188,33 @@ class PosState {
     localStorage.setItem('yamato_pos_sales', JSON.stringify(this.salesHistory));
   }
 
+  loadUsers() {
+    const saved = localStorage.getItem('yamato_pos_users');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Always ensure default admin is present
+          if (!parsed.some(u => u.role === 'admin')) {
+            parsed.unshift(DEFAULT_USERS[0]);
+          }
+          // Always ensure default employee Mhyk Magdangal is present
+          if (!parsed.some(u => u.name && u.name.toLowerCase().includes('mhyk'))) {
+            parsed.push(DEFAULT_USERS[1]);
+          }
+          return parsed;
+        }
+      } catch (e) {
+        console.error('Error loading saved users:', e);
+      }
+    }
+    return JSON.parse(JSON.stringify(DEFAULT_USERS));
+  }
+
+  saveUsers() {
+    localStorage.setItem('yamato_pos_users', JSON.stringify(this.users));
+  }
+
   nextOrderNumber() {
     this.orderSeq += 1;
     localStorage.setItem('yamato_order_seq', this.orderSeq.toString());
@@ -5648,12 +6298,13 @@ function renderCategoriesBar() {
     `;
   }).join('');
 
-  const managePillHtml = `
+  const isAdmin = state.currentUser ? state.currentUser.role === 'admin' : false;
+  const managePillHtml = isAdmin ? `
     <button class="category-pill manage-cat-pill" id="btn-open-manage-categories" title="Manage Categories (Add, Edit, Delete)">
       <i class="fa-solid fa-sliders"></i>
       <span>Categories</span>
     </button>
-  `;
+  ` : '';
 
   bar.innerHTML = pillsHtml + managePillHtml;
 
@@ -6080,6 +6731,10 @@ function populateCategorySelectDropdown(selectedCategory = '') {
 }
 
 function openCategoriesModal() {
+  if (state.currentUser?.role !== 'admin') {
+    showToast('Admin privilege required to manage categories', 'fa-lock');
+    return;
+  }
   renderCategoriesManageList();
   const input = document.getElementById('new-category-input');
   if (input) input.value = '';
@@ -6271,6 +6926,10 @@ function quickAddCategoryPrompt() {
 // ADD / EDIT / DELETE MENU ITEMS
 // ============================================================================
 function openAddItemModal() {
+  if (state.currentUser?.role !== 'admin') {
+    showToast('Admin privilege required to add menu items', 'fa-lock');
+    return;
+  }
   document.getElementById('modal-item-title').innerHTML = `
     <i class="fa-solid fa-circle-plus" style="color: var(--primary-red);"></i>
     Add New Menu Item
@@ -6291,6 +6950,10 @@ function openAddItemModal() {
 }
 
 function openEditItemModal(itemId) {
+  if (state.currentUser?.role !== 'admin') {
+    showToast('Admin privilege required to edit menu items', 'fa-lock');
+    return;
+  }
   const item = state.catalog.find(i => i.id === itemId);
   if (!item) return;
 
@@ -6741,6 +7404,7 @@ function processPaymentSubmission() {
     time: timeStr,
     timestamp: now.getTime(),
     status: 'Pending',
+    cashier: (state.currentUser && state.currentUser.name) || 'Mhyk Magdangal',
     diningType: state.orderType,
     tableNum: state.tableNum || 'Counter',
     items: JSON.parse(JSON.stringify(state.cart)),
@@ -7030,6 +7694,9 @@ window.openOrderDetailsModal = function(orderId) {
   const countEl = document.getElementById('order-details-count');
   if (countEl) countEl.textContent = `${totalItemsCount} item${totalItemsCount !== 1 ? 's' : ''}`;
 
+  const cashierEl = document.getElementById('order-details-cashier');
+  if (cashierEl) cashierEl.textContent = order.cashier || 'Mhyk Magdangal';
+
   const tbody = document.getElementById('order-details-items-body');
   if (tbody) {
     tbody.innerHTML = order.items.map(line => {
@@ -7112,6 +7779,22 @@ window.cancelOrder = function(orderId) {
   const order = state.salesHistory.find(o => o.id === orderId);
   if (!order) return;
 
+  // Employee must provide admin authorization to cancel orders
+  if (state.currentUser?.role !== 'admin') {
+    requestAdminAuthorization({
+      title: 'Admin Approval Required',
+      reason: `Admin authorization required to cancel Order ${order.orderNumber} (${formatCurrency(order.total)}).`,
+      onSuccess: () => {
+        executeCancelOrder(order);
+      }
+    });
+    return;
+  }
+
+  executeCancelOrder(order);
+};
+
+function executeCancelOrder(order) {
   const confirmMsg = `Are you sure you want to CANCEL Order ${order.orderNumber}?
 
 ` +
@@ -7150,7 +7833,7 @@ window.cancelOrder = function(orderId) {
   renderOrdersQueue();
   renderSalesHistory();
   updateGoogleSheetsUI();
-};
+}
 
 // ============================================================================
 // THERMAL RECEIPT RENDERING & PRINTING (CUSTOMER COPY + KITCHEN TICKET)
@@ -7168,6 +7851,12 @@ function renderReceiptModal(order) {
 
   const payEl = document.getElementById('receipt-pay-method');
   if (payEl) payEl.textContent = order.paymentMethod.toUpperCase();
+
+  const cashierEl = document.getElementById('receipt-cashier-name');
+  if (cashierEl) cashierEl.textContent = `Cashier: ${order.cashier || (state.currentUser ? state.currentUser.name : 'Mhyk Magdangal')}`;
+
+  const kitchenCashier = document.getElementById('kitchen-cashier-name');
+  if (kitchenCashier) kitchenCashier.textContent = `Cashier: ${order.cashier || (state.currentUser ? state.currentUser.name : 'Mhyk Magdangal')}`;
 
   const tbody = document.getElementById('receipt-items-body');
   if (tbody) {
@@ -7621,10 +8310,11 @@ function exportSalesToCSV() {
     return;
   }
 
-  let csv = 'OrderNumber,Date,Time,DiningType,Table,PaymentMethod,Status,Subtotal,Discount,Total,CashReceived,Change,ItemsCount
+  let csv = 'OrderNumber,Date,Time,Cashier,DiningType,Table,PaymentMethod,Status,Subtotal,Discount,Total,CashReceived,Change,ItemsCount
 ';
   filteredHistory.forEach(ord => {
-    csv += `"${ord.orderNumber}","${ord.date}","${ord.time}","${ord.diningType}","${ord.tableNum}","${ord.paymentMethod}","${ord.status || 'Completed'}",${ord.subtotal},${ord.discountAmount},${ord.total},${ord.cashReceived},${ord.change},${ord.items.length}
+    const cashierName = ord.cashier || 'Mhyk Magdangal';
+    csv += `"${ord.orderNumber}","${ord.date}","${ord.time}","${cashierName}","${ord.diningType}","${ord.tableNum}","${ord.paymentMethod}","${ord.status || 'Completed'}",${ord.subtotal},${ord.discountAmount},${ord.total},${ord.cashReceived},${ord.change},${ord.items.length}
 `;
   });
 
@@ -7660,6 +8350,10 @@ function exportFullBackupJSON() {
 }
 
 function resetDefaultMenu() {
+  if (state.currentUser?.role !== 'admin') {
+    showToast('Admin privilege required to reset menu', 'fa-lock');
+    return;
+  }
   if (confirm('Reset catalog back to the official Yamato Shokudo starting menu? All items, categories & prices will be restored.')) {
     state.customCategories = [...DEFAULT_CATEGORIES];
     state.saveCategories();
@@ -7675,6 +8369,10 @@ function resetDefaultMenu() {
 }
 
 function clearSalesHistory() {
+  if (state.currentUser?.role !== 'admin') {
+    showToast('Admin privilege required to clear sales history', 'fa-lock');
+    return;
+  }
   if (confirm('Are you sure you want to clear all completed sales transaction logs?')) {
     state.salesHistory = [];
     state.saveSalesHistory();
@@ -8157,6 +8855,10 @@ function initEventListeners() {
   if (toggleManageBtn) {
     toggleManageBtn.addEventListener('click', () => {
       AudioEngine.playTap();
+      if (state.currentUser?.role !== 'admin') {
+        showToast('Admin privilege required to edit menu', 'fa-lock');
+        return;
+      }
       state.manageMode = !state.manageMode;
       if (state.manageMode) {
         toggleManageBtn.classList.add('primary');
@@ -8291,6 +8993,10 @@ function initEventListeners() {
 
   document.getElementById('btn-manage-discounts')?.addEventListener('click', () => {
     AudioEngine.playTap();
+    if (state.currentUser?.role !== 'admin') {
+      showToast('Admin privilege required to manage promos', 'fa-lock');
+      return;
+    }
     renderPromosModalList();
     document.getElementById('modal-discounts')?.classList.add('active');
   });
@@ -8307,9 +9013,26 @@ function initEventListeners() {
   // Clear Cart
   document.getElementById('btn-clear-cart')?.addEventListener('click', clearCart);
 
-  // Checkout Button
+  // Checkout Button (With Admin Authorization if discount is applied by Employee)
   document.getElementById('btn-checkout')?.addEventListener('click', () => {
     AudioEngine.playTap();
+    if (state.cart.length === 0) return;
+
+    const { discountAmount } = calculateCartTotals();
+    const hasDiscount = discountAmount > 0 || state.discountPercent > 0 || Boolean(state.discountPromoId);
+
+    // If employee applied a discount, prompt for Admin ID / password before proceeding to payment
+    if (state.currentUser?.role !== 'admin' && hasDiscount) {
+      requestAdminAuthorization({
+        title: 'Admin Approval Required',
+        reason: `Admin authorization required to grant discount (${state.discountName || 'Promo'} -${formatCurrency(discountAmount)}) before payment.`,
+        onSuccess: () => {
+          openPaymentModal();
+        }
+      });
+      return;
+    }
+
     openPaymentModal();
   });
 
@@ -8585,6 +9308,65 @@ function initEventListeners() {
     toggleMobileCart(false);
   });
 
+  // Login Modal Event Listeners
+  document.getElementById('btn-submit-login')?.addEventListener('click', handleLoginSubmit);
+  document.getElementById('login-password')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleLoginSubmit();
+  });
+  document.getElementById('login-username')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('login-password')?.focus();
+  });
+  document.getElementById('btn-toggle-login-pass')?.addEventListener('click', () => {
+    const passInput = document.getElementById('login-password');
+    const icon = document.querySelector('#btn-toggle-login-pass i');
+    if (!passInput) return;
+    if (passInput.type === 'password') {
+      passInput.type = 'text';
+      if (icon) icon.className = 'fa-regular fa-eye-slash';
+    } else {
+      passInput.type = 'password';
+      if (icon) icon.className = 'fa-regular fa-eye';
+    }
+  });
+
+  // Header Cashier Logout / Switch
+  document.getElementById('btn-cashier-logout')?.addEventListener('click', logoutUser);
+
+  // Admin Auth Modal Listeners
+  document.getElementById('btn-confirm-admin-auth')?.addEventListener('click', handleAdminAuthSubmit);
+  document.getElementById('admin-auth-password')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleAdminAuthSubmit();
+  });
+  document.getElementById('btn-cancel-admin-auth')?.addEventListener('click', closeAdminAuthModal);
+  document.getElementById('btn-close-admin-auth')?.addEventListener('click', closeAdminAuthModal);
+  document.getElementById('btn-toggle-auth-pass')?.addEventListener('click', () => {
+    const passInput = document.getElementById('admin-auth-password');
+    const icon = document.querySelector('#btn-toggle-auth-pass i');
+    if (!passInput) return;
+    if (passInput.type === 'password') {
+      passInput.type = 'text';
+      if (icon) icon.className = 'fa-regular fa-eye-slash';
+    } else {
+      passInput.type = 'password';
+      if (icon) icon.className = 'fa-regular fa-eye';
+    }
+  });
+
+  // Staff Management Listeners (Admin Only)
+  document.getElementById('btn-open-staff-mgmt')?.addEventListener('click', openStaffModal);
+  document.getElementById('btn-close-staff-modal')?.addEventListener('click', closeModals);
+  document.getElementById('btn-close-staff-btn')?.addEventListener('click', closeModals);
+  document.getElementById('btn-create-employee')?.addEventListener('click', createEmployeeAccount);
+  document.getElementById('new-employee-name')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('new-employee-username')?.focus();
+  });
+  document.getElementById('new-employee-username')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('new-employee-password')?.focus();
+  });
+  document.getElementById('new-employee-password')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') createEmployeeAccount();
+  });
+
   // Register Service Worker for Offline POS Support
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').then(reg => {
@@ -8594,6 +9376,364 @@ function initEventListeners() {
     });
   }
 }
+
+// ============================================================================
+// CASHIER AUTHENTICATION, ROLES & STAFF MANAGEMENT
+// ============================================================================
+function initLoginSystem() {
+  renderLoginQuickChips();
+
+  // If user session is already remembered, restore it
+  const savedUser = localStorage.getItem('yamato_pos_current_user');
+  if (savedUser) {
+    try {
+      const parsed = JSON.parse(savedUser);
+      const verified = state.users.find(u => u.id === parsed.id || u.username === parsed.username);
+      if (verified) {
+        state.currentUser = verified;
+        applyUserRoleUI();
+      }
+    } catch (e) {
+      console.error('Error loading current user session:', e);
+    }
+  }
+
+  // Always display login modal upon opening the app
+  openLoginModal();
+}
+
+function renderLoginQuickChips() {
+  const container = document.getElementById('login-quick-chips');
+  if (!container) return;
+
+  container.innerHTML = state.users.map(u => {
+    const isAdmin = u.role === 'admin';
+    return `
+      <button type="button" class="quick-chip-btn" data-username="${escapeHtml(u.username)}" data-name="${escapeHtml(u.name)}">
+        <i class="fa-solid ${isAdmin ? 'fa-crown' : 'fa-user'}" style="color: ${isAdmin ? 'var(--accent-gold)' : 'var(--accent-green)'};"></i>
+        <span>${escapeHtml(u.name)}</span>
+        <span class="role-badge ${isAdmin ? 'admin' : 'staff'}">${isAdmin ? 'Admin' : 'Staff'}</span>
+      </button>
+    `;
+  }).join('');
+
+  container.querySelectorAll('.quick-chip-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      AudioEngine.playTap();
+      container.querySelectorAll('.quick-chip-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const userField = document.getElementById('login-username');
+      const passField = document.getElementById('login-password');
+      if (userField) {
+        userField.value = btn.dataset.name;
+      }
+      if (passField) {
+        passField.value = '';
+        passField.focus();
+      }
+      hideLoginError();
+    });
+  });
+}
+
+function openLoginModal() {
+  const modal = document.getElementById('modal-login');
+  if (!modal) return;
+  modal.classList.add('active');
+  hideLoginError();
+
+  const userField = document.getElementById('login-username');
+  const passField = document.getElementById('login-password');
+
+  // Pre-fill with current user or default employee
+  const targetUser = state.currentUser || state.users.find(u => u.role === 'employee') || state.users[0];
+  if (userField && targetUser) {
+    userField.value = targetUser.name;
+  }
+  if (passField) {
+    passField.value = '';
+    setTimeout(() => passField.focus(), 150);
+  }
+}
+
+function showLoginError(msg) {
+  const box = document.getElementById('login-error-box');
+  const text = document.getElementById('login-error-text');
+  if (box && text) {
+    text.textContent = msg;
+    box.style.display = 'flex';
+  }
+}
+
+function hideLoginError() {
+  const box = document.getElementById('login-error-box');
+  if (box) box.style.display = 'none';
+}
+
+function handleLoginSubmit() {
+  const userField = document.getElementById('login-username');
+  const passField = document.getElementById('login-password');
+  const rawUser = (userField ? userField.value : '').trim();
+  const rawPass = (passField ? passField.value : '').trim();
+
+  if (!rawUser) {
+    showLoginError('Please enter cashier name / username or select a quick account.');
+    userField?.focus();
+    return;
+  }
+  if (!rawPass) {
+    showLoginError('Please enter password.');
+    passField?.focus();
+    return;
+  }
+
+  const q = rawUser.toLowerCase();
+  const matched = state.users.find(u => 
+    (u.username && u.username.toLowerCase() === q) || 
+    (u.name && u.name.toLowerCase() === q)
+  );
+
+  if (!matched || matched.password !== rawPass) {
+    showLoginError('Incorrect cashier name or password. Please try again.');
+    passField?.focus();
+    return;
+  }
+
+  // Success
+  state.currentUser = matched;
+  localStorage.setItem('yamato_pos_current_user', JSON.stringify({
+    id: matched.id,
+    username: matched.username,
+    name: matched.name,
+    role: matched.role
+  }));
+
+  document.getElementById('modal-login')?.classList.remove('active');
+  applyUserRoleUI();
+  showToast(`Logged in as ${matched.name} (${matched.role === 'admin' ? 'Admin' : 'Cashier Shift'})!`, 'fa-circle-user');
+}
+
+function logoutUser() {
+  if (confirm('Switch cashier shift / log out?')) {
+    state.currentUser = null;
+    localStorage.removeItem('yamato_pos_current_user');
+    if (state.manageMode) {
+      state.manageMode = false;
+      const manageLabel = document.getElementById('manage-mode-label');
+      if (manageLabel) manageLabel.textContent = 'Edit Menu';
+    }
+    renderCatalog();
+    renderCategoriesBar();
+    openLoginModal();
+  }
+}
+
+function applyUserRoleUI() {
+  const user = state.currentUser || { name: 'Mhyk Magdangal', role: 'employee' };
+  const isAdmin = user.role === 'admin';
+
+  // Update Header Cashier Badge
+  const nameEl = document.getElementById('header-cashier-name');
+  const roleEl = document.getElementById('header-user-role');
+  if (nameEl) nameEl.textContent = user.name;
+  if (roleEl) {
+    roleEl.textContent = isAdmin ? 'Admin' : 'Staff';
+    roleEl.className = `cashier-role-badge ${isAdmin ? 'admin' : 'staff'}`;
+  }
+
+  // Admin Only UI Elements Visibility
+  const addItemBtn = document.getElementById('btn-open-add-item');
+  if (addItemBtn) addItemBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+
+  const editMenuBtn = document.getElementById('btn-toggle-manage-mode');
+  if (editMenuBtn) editMenuBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+
+  const staffBtn = document.getElementById('btn-open-staff-mgmt');
+  if (staffBtn) staffBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+
+  const clearHistoryBtn = document.getElementById('btn-reset-sales-history');
+  if (clearHistoryBtn) clearHistoryBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+
+  const manageDiscBtn = document.getElementById('btn-manage-discounts');
+  if (manageDiscBtn) manageDiscBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+
+  // If not admin, ensure manageMode is disabled
+  if (!isAdmin && state.manageMode) {
+    state.manageMode = false;
+    const manageLabel = document.getElementById('manage-mode-label');
+    if (manageLabel) manageLabel.textContent = 'Edit Menu';
+  }
+
+  renderCategoriesBar();
+  renderCatalog();
+}
+
+// ============================================================================
+// ADMIN AUTHORIZATION MODAL (FOR DISCOUNTS & CANCELLATIONS)
+// ============================================================================
+function requestAdminAuthorization({ title, reason, onSuccess }) {
+  state.adminAuthCallback = onSuccess;
+  const modal = document.getElementById('modal-admin-auth');
+  const titleEl = document.getElementById('admin-auth-title');
+  const reasonEl = document.getElementById('admin-auth-reason');
+  const passInput = document.getElementById('admin-auth-password');
+  const errBox = document.getElementById('admin-auth-error');
+
+  if (titleEl && title) titleEl.textContent = title;
+  if (reasonEl && reason) reasonEl.textContent = reason;
+  if (errBox) errBox.style.display = 'none';
+  if (passInput) passInput.value = '';
+
+  if (modal) {
+    modal.classList.add('active');
+    setTimeout(() => passInput?.focus(), 150);
+  }
+}
+
+function closeAdminAuthModal() {
+  document.getElementById('modal-admin-auth')?.classList.remove('active');
+  state.adminAuthCallback = null;
+}
+
+function handleAdminAuthSubmit() {
+  const passInput = document.getElementById('admin-auth-password');
+  const errBox = document.getElementById('admin-auth-error');
+  const pass = (passInput ? passInput.value : '').trim();
+
+  // Find admin user in state
+  const adminUser = state.users.find(u => u.role === 'admin');
+  const isValid = (adminUser && pass === adminUser.password) || pass === 'admin123';
+
+  if (!isValid) {
+    if (errBox) {
+      errBox.style.display = 'flex';
+      document.getElementById('admin-auth-error-text').textContent = 'Incorrect Admin Password.';
+    }
+    passInput?.focus();
+    return;
+  }
+
+  // Verification passed
+  document.getElementById('modal-admin-auth')?.classList.remove('active');
+  showToast('Admin Authorized!', 'fa-shield-halved');
+
+  if (typeof state.adminAuthCallback === 'function') {
+    const cb = state.adminAuthCallback;
+    state.adminAuthCallback = null;
+    cb();
+  }
+}
+
+// ============================================================================
+// STAFF MANAGEMENT PORTAL (ADMIN ONLY)
+// ============================================================================
+function openStaffModal() {
+  if (state.currentUser?.role !== 'admin') {
+    showToast('Admin privilege required', 'fa-lock');
+    return;
+  }
+  renderStaffAccountsList();
+  document.getElementById('modal-staff')?.classList.add('active');
+}
+
+function renderStaffAccountsList() {
+  const list = document.getElementById('staff-accounts-list');
+  const count = document.getElementById('staff-accounts-count');
+  if (!list) return;
+
+  if (count) count.textContent = `${state.users.length} Account${state.users.length !== 1 ? 's' : ''}`;
+
+  list.innerHTML = state.users.map(u => {
+    const isAdmin = u.role === 'admin';
+    return `
+      <div class="staff-account-card">
+        <div class="staff-account-left">
+          <i class="fa-solid ${isAdmin ? 'fa-crown' : 'fa-circle-user'}" style="font-size: 1.3rem; color: ${isAdmin ? 'var(--accent-gold)' : 'var(--accent-green)'};"></i>
+          <div class="staff-account-info">
+            <div class="staff-account-name">
+              <span>${escapeHtml(u.name)}</span>
+              <span class="role-badge ${isAdmin ? 'admin' : 'staff'}">${isAdmin ? 'Admin' : 'Staff'}</span>
+            </div>
+            <div class="staff-account-user">
+              <span>Username: <strong>${escapeHtml(u.username)}</strong></span> • 
+              <span>Password: <code>${escapeHtml(u.password)}</code></span>
+            </div>
+          </div>
+        </div>
+        <div>
+          ${!isAdmin ? `
+            <button type="button" class="btn-del-staff" onclick="deleteEmployeeAccount('${u.id}')" title="Delete Employee Account">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          ` : '<span style="font-size: 0.72rem; color: var(--accent-gold); font-weight:700;"><i class="fa-solid fa-lock"></i> Protected</span>'}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function createEmployeeAccount() {
+  if (state.currentUser?.role !== 'admin') {
+    showToast('Admin privilege required', 'fa-lock');
+    return;
+  }
+
+  const nameInput = document.getElementById('new-employee-name');
+  const userInput = document.getElementById('new-employee-username');
+  const passInput = document.getElementById('new-employee-password');
+
+  const name = (nameInput ? nameInput.value : '').trim();
+  const username = (userInput ? userInput.value : '').trim().toLowerCase();
+  const password = (passInput ? passInput.value : '').trim();
+
+  if (!name || !username || !password) {
+    showToast('Please fill in employee name, username and password', 'fa-circle-exclamation');
+    return;
+  }
+
+  // Prevent duplicate usernames
+  if (state.users.some(u => u.username.toLowerCase() === username)) {
+    showToast(`Username "${username}" already exists. Choose a different one.`, 'fa-triangle-exclamation');
+    userInput?.focus();
+    return;
+  }
+
+  const newEmp = {
+    id: 'usr-' + Date.now(),
+    name: name,
+    username: username,
+    password: password,
+    role: 'employee',
+    createdAt: new Date().toLocaleDateString()
+  };
+
+  state.users.push(newEmp);
+  state.saveUsers();
+
+  if (nameInput) nameInput.value = '';
+  if (userInput) userInput.value = '';
+  if (passInput) passInput.value = '';
+
+  renderStaffAccountsList();
+  renderLoginQuickChips();
+  showToast(`Employee "${name}" created successfully!`, 'fa-user-check');
+}
+
+window.deleteEmployeeAccount = function(userId) {
+  if (state.currentUser?.role !== 'admin') return;
+
+  const user = state.users.find(u => u.id === userId);
+  if (!user || user.role === 'admin') return;
+
+  if (!confirm(`Are you sure you want to remove employee "${user.name}"?`)) return;
+
+  state.users = state.users.filter(u => u.id !== userId);
+  state.saveUsers();
+  renderStaffAccountsList();
+  renderLoginQuickChips();
+  showToast(`Employee "${user.name}" removed`, 'fa-trash');
+};
 
 // ============================================================================
 // APP ENTRY POINT
@@ -8606,6 +9746,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateActiveOrdersBadge();
   updateGoogleSheetsUI();
   initEventListeners();
+  initLoginSystem();
 });
 
 </script>

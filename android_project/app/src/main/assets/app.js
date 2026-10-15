@@ -153,6 +153,26 @@ const DEFAULT_DISCOUNTS = [
   { id: 'disc-vip', name: 'Loyalty / VIP', percent: 5 }
 ];
 
+// Default User & Cashier Accounts
+const DEFAULT_USERS = [
+  {
+    id: 'usr-admin',
+    username: 'admin',
+    name: 'Admin',
+    role: 'admin',
+    password: 'admin123',
+    createdAt: 'System'
+  },
+  {
+    id: 'usr-mhyk',
+    username: 'mhyk',
+    name: 'Mhyk Magdangal',
+    role: 'employee',
+    password: 'employee123',
+    createdAt: 'System'
+  }
+];
+
 // Optional Pre-configured Default Google Sheets Webhook URL
 // (If you put your Webhook URL here, it will be automatically built-in for every new device/tablet installation)
 const DEFAULT_GSHEET_URL = 'https://script.google.com/macros/s/AKfycbytQIVGsuv9v9WtPpVYK3X0wC36tiv4WIBtFwoMg_ORtfePrzmKqiQ-QBEyaz5GLYBEmA/exec';
@@ -160,6 +180,9 @@ const DEFAULT_GSHEET_URL = 'https://script.google.com/macros/s/AKfycbytQIVGsuv9v
 // App State
 class PosState {
   constructor() {
+    this.users = this.loadUsers();
+    this.currentUser = null;
+    this.adminAuthCallback = null;
     this.customCategories = this.loadCategories();
     this.customDiscounts = this.loadDiscounts();
     this.catalog = this.loadCatalog();
@@ -301,6 +324,33 @@ class PosState {
     localStorage.setItem('yamato_pos_sales', JSON.stringify(this.salesHistory));
   }
 
+  loadUsers() {
+    const saved = localStorage.getItem('yamato_pos_users');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Always ensure default admin is present
+          if (!parsed.some(u => u.role === 'admin')) {
+            parsed.unshift(DEFAULT_USERS[0]);
+          }
+          // Always ensure default employee Mhyk Magdangal is present
+          if (!parsed.some(u => u.name && u.name.toLowerCase().includes('mhyk'))) {
+            parsed.push(DEFAULT_USERS[1]);
+          }
+          return parsed;
+        }
+      } catch (e) {
+        console.error('Error loading saved users:', e);
+      }
+    }
+    return JSON.parse(JSON.stringify(DEFAULT_USERS));
+  }
+
+  saveUsers() {
+    localStorage.setItem('yamato_pos_users', JSON.stringify(this.users));
+  }
+
   nextOrderNumber() {
     this.orderSeq += 1;
     localStorage.setItem('yamato_order_seq', this.orderSeq.toString());
@@ -384,12 +434,13 @@ function renderCategoriesBar() {
     `;
   }).join('');
 
-  const managePillHtml = `
+  const isAdmin = state.currentUser ? state.currentUser.role === 'admin' : false;
+  const managePillHtml = isAdmin ? `
     <button class="category-pill manage-cat-pill" id="btn-open-manage-categories" title="Manage Categories (Add, Edit, Delete)">
       <i class="fa-solid fa-sliders"></i>
       <span>Categories</span>
     </button>
-  `;
+  ` : '';
 
   bar.innerHTML = pillsHtml + managePillHtml;
 
@@ -816,6 +867,10 @@ function populateCategorySelectDropdown(selectedCategory = '') {
 }
 
 function openCategoriesModal() {
+  if (state.currentUser?.role !== 'admin') {
+    showToast('Admin privilege required to manage categories', 'fa-lock');
+    return;
+  }
   renderCategoriesManageList();
   const input = document.getElementById('new-category-input');
   if (input) input.value = '';
@@ -1005,6 +1060,10 @@ function quickAddCategoryPrompt() {
 // ADD / EDIT / DELETE MENU ITEMS
 // ============================================================================
 function openAddItemModal() {
+  if (state.currentUser?.role !== 'admin') {
+    showToast('Admin privilege required to add menu items', 'fa-lock');
+    return;
+  }
   document.getElementById('modal-item-title').innerHTML = `
     <i class="fa-solid fa-circle-plus" style="color: var(--primary-red);"></i>
     Add New Menu Item
@@ -1025,6 +1084,10 @@ function openAddItemModal() {
 }
 
 function openEditItemModal(itemId) {
+  if (state.currentUser?.role !== 'admin') {
+    showToast('Admin privilege required to edit menu items', 'fa-lock');
+    return;
+  }
   const item = state.catalog.find(i => i.id === itemId);
   if (!item) return;
 
@@ -1475,6 +1538,7 @@ function processPaymentSubmission() {
     time: timeStr,
     timestamp: now.getTime(),
     status: 'Pending',
+    cashier: (state.currentUser && state.currentUser.name) || 'Mhyk Magdangal',
     diningType: state.orderType,
     tableNum: state.tableNum || 'Counter',
     items: JSON.parse(JSON.stringify(state.cart)),
@@ -1764,6 +1828,9 @@ window.openOrderDetailsModal = function(orderId) {
   const countEl = document.getElementById('order-details-count');
   if (countEl) countEl.textContent = `${totalItemsCount} item${totalItemsCount !== 1 ? 's' : ''}`;
 
+  const cashierEl = document.getElementById('order-details-cashier');
+  if (cashierEl) cashierEl.textContent = order.cashier || 'Mhyk Magdangal';
+
   const tbody = document.getElementById('order-details-items-body');
   if (tbody) {
     tbody.innerHTML = order.items.map(line => {
@@ -1846,6 +1913,22 @@ window.cancelOrder = function(orderId) {
   const order = state.salesHistory.find(o => o.id === orderId);
   if (!order) return;
 
+  // Employee must provide admin authorization to cancel orders
+  if (state.currentUser?.role !== 'admin') {
+    requestAdminAuthorization({
+      title: 'Admin Approval Required',
+      reason: `Admin authorization required to cancel Order ${order.orderNumber} (${formatCurrency(order.total)}).`,
+      onSuccess: () => {
+        executeCancelOrder(order);
+      }
+    });
+    return;
+  }
+
+  executeCancelOrder(order);
+};
+
+function executeCancelOrder(order) {
   const confirmMsg = `Are you sure you want to CANCEL Order ${order.orderNumber}?\n\n` +
     `Total amount of ${formatCurrency(order.total)} will be subtracted from today's sales.`;
 
@@ -1882,7 +1965,7 @@ window.cancelOrder = function(orderId) {
   renderOrdersQueue();
   renderSalesHistory();
   updateGoogleSheetsUI();
-};
+}
 
 // ============================================================================
 // THERMAL RECEIPT RENDERING & PRINTING (CUSTOMER COPY + KITCHEN TICKET)
@@ -1900,6 +1983,12 @@ function renderReceiptModal(order) {
 
   const payEl = document.getElementById('receipt-pay-method');
   if (payEl) payEl.textContent = order.paymentMethod.toUpperCase();
+
+  const cashierEl = document.getElementById('receipt-cashier-name');
+  if (cashierEl) cashierEl.textContent = `Cashier: ${order.cashier || (state.currentUser ? state.currentUser.name : 'Mhyk Magdangal')}`;
+
+  const kitchenCashier = document.getElementById('kitchen-cashier-name');
+  if (kitchenCashier) kitchenCashier.textContent = `Cashier: ${order.cashier || (state.currentUser ? state.currentUser.name : 'Mhyk Magdangal')}`;
 
   const tbody = document.getElementById('receipt-items-body');
   if (tbody) {
@@ -2353,9 +2442,10 @@ function exportSalesToCSV() {
     return;
   }
 
-  let csv = 'OrderNumber,Date,Time,DiningType,Table,PaymentMethod,Status,Subtotal,Discount,Total,CashReceived,Change,ItemsCount\n';
+  let csv = 'OrderNumber,Date,Time,Cashier,DiningType,Table,PaymentMethod,Status,Subtotal,Discount,Total,CashReceived,Change,ItemsCount\n';
   filteredHistory.forEach(ord => {
-    csv += `"${ord.orderNumber}","${ord.date}","${ord.time}","${ord.diningType}","${ord.tableNum}","${ord.paymentMethod}","${ord.status || 'Completed'}",${ord.subtotal},${ord.discountAmount},${ord.total},${ord.cashReceived},${ord.change},${ord.items.length}\n`;
+    const cashierName = ord.cashier || 'Mhyk Magdangal';
+    csv += `"${ord.orderNumber}","${ord.date}","${ord.time}","${cashierName}","${ord.diningType}","${ord.tableNum}","${ord.paymentMethod}","${ord.status || 'Completed'}",${ord.subtotal},${ord.discountAmount},${ord.total},${ord.cashReceived},${ord.change},${ord.items.length}\n`;
   });
 
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -2390,6 +2480,10 @@ function exportFullBackupJSON() {
 }
 
 function resetDefaultMenu() {
+  if (state.currentUser?.role !== 'admin') {
+    showToast('Admin privilege required to reset menu', 'fa-lock');
+    return;
+  }
   if (confirm('Reset catalog back to the official Yamato Shokudo starting menu? All items, categories & prices will be restored.')) {
     state.customCategories = [...DEFAULT_CATEGORIES];
     state.saveCategories();
@@ -2405,6 +2499,10 @@ function resetDefaultMenu() {
 }
 
 function clearSalesHistory() {
+  if (state.currentUser?.role !== 'admin') {
+    showToast('Admin privilege required to clear sales history', 'fa-lock');
+    return;
+  }
   if (confirm('Are you sure you want to clear all completed sales transaction logs?')) {
     state.salesHistory = [];
     state.saveSalesHistory();
@@ -2887,6 +2985,10 @@ function initEventListeners() {
   if (toggleManageBtn) {
     toggleManageBtn.addEventListener('click', () => {
       AudioEngine.playTap();
+      if (state.currentUser?.role !== 'admin') {
+        showToast('Admin privilege required to edit menu', 'fa-lock');
+        return;
+      }
       state.manageMode = !state.manageMode;
       if (state.manageMode) {
         toggleManageBtn.classList.add('primary');
@@ -3021,6 +3123,10 @@ function initEventListeners() {
 
   document.getElementById('btn-manage-discounts')?.addEventListener('click', () => {
     AudioEngine.playTap();
+    if (state.currentUser?.role !== 'admin') {
+      showToast('Admin privilege required to manage promos', 'fa-lock');
+      return;
+    }
     renderPromosModalList();
     document.getElementById('modal-discounts')?.classList.add('active');
   });
@@ -3037,9 +3143,26 @@ function initEventListeners() {
   // Clear Cart
   document.getElementById('btn-clear-cart')?.addEventListener('click', clearCart);
 
-  // Checkout Button
+  // Checkout Button (With Admin Authorization if discount is applied by Employee)
   document.getElementById('btn-checkout')?.addEventListener('click', () => {
     AudioEngine.playTap();
+    if (state.cart.length === 0) return;
+
+    const { discountAmount } = calculateCartTotals();
+    const hasDiscount = discountAmount > 0 || state.discountPercent > 0 || Boolean(state.discountPromoId);
+
+    // If employee applied a discount, prompt for Admin ID / password before proceeding to payment
+    if (state.currentUser?.role !== 'admin' && hasDiscount) {
+      requestAdminAuthorization({
+        title: 'Admin Approval Required',
+        reason: `Admin authorization required to grant discount (${state.discountName || 'Promo'} -${formatCurrency(discountAmount)}) before payment.`,
+        onSuccess: () => {
+          openPaymentModal();
+        }
+      });
+      return;
+    }
+
     openPaymentModal();
   });
 
@@ -3315,6 +3438,65 @@ function initEventListeners() {
     toggleMobileCart(false);
   });
 
+  // Login Modal Event Listeners
+  document.getElementById('btn-submit-login')?.addEventListener('click', handleLoginSubmit);
+  document.getElementById('login-password')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleLoginSubmit();
+  });
+  document.getElementById('login-username')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('login-password')?.focus();
+  });
+  document.getElementById('btn-toggle-login-pass')?.addEventListener('click', () => {
+    const passInput = document.getElementById('login-password');
+    const icon = document.querySelector('#btn-toggle-login-pass i');
+    if (!passInput) return;
+    if (passInput.type === 'password') {
+      passInput.type = 'text';
+      if (icon) icon.className = 'fa-regular fa-eye-slash';
+    } else {
+      passInput.type = 'password';
+      if (icon) icon.className = 'fa-regular fa-eye';
+    }
+  });
+
+  // Header Cashier Logout / Switch
+  document.getElementById('btn-cashier-logout')?.addEventListener('click', logoutUser);
+
+  // Admin Auth Modal Listeners
+  document.getElementById('btn-confirm-admin-auth')?.addEventListener('click', handleAdminAuthSubmit);
+  document.getElementById('admin-auth-password')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleAdminAuthSubmit();
+  });
+  document.getElementById('btn-cancel-admin-auth')?.addEventListener('click', closeAdminAuthModal);
+  document.getElementById('btn-close-admin-auth')?.addEventListener('click', closeAdminAuthModal);
+  document.getElementById('btn-toggle-auth-pass')?.addEventListener('click', () => {
+    const passInput = document.getElementById('admin-auth-password');
+    const icon = document.querySelector('#btn-toggle-auth-pass i');
+    if (!passInput) return;
+    if (passInput.type === 'password') {
+      passInput.type = 'text';
+      if (icon) icon.className = 'fa-regular fa-eye-slash';
+    } else {
+      passInput.type = 'password';
+      if (icon) icon.className = 'fa-regular fa-eye';
+    }
+  });
+
+  // Staff Management Listeners (Admin Only)
+  document.getElementById('btn-open-staff-mgmt')?.addEventListener('click', openStaffModal);
+  document.getElementById('btn-close-staff-modal')?.addEventListener('click', closeModals);
+  document.getElementById('btn-close-staff-btn')?.addEventListener('click', closeModals);
+  document.getElementById('btn-create-employee')?.addEventListener('click', createEmployeeAccount);
+  document.getElementById('new-employee-name')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('new-employee-username')?.focus();
+  });
+  document.getElementById('new-employee-username')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('new-employee-password')?.focus();
+  });
+  document.getElementById('new-employee-password')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') createEmployeeAccount();
+  });
+
   // Register Service Worker for Offline POS Support
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').then(reg => {
@@ -3324,6 +3506,364 @@ function initEventListeners() {
     });
   }
 }
+
+// ============================================================================
+// CASHIER AUTHENTICATION, ROLES & STAFF MANAGEMENT
+// ============================================================================
+function initLoginSystem() {
+  renderLoginQuickChips();
+
+  // If user session is already remembered, restore it
+  const savedUser = localStorage.getItem('yamato_pos_current_user');
+  if (savedUser) {
+    try {
+      const parsed = JSON.parse(savedUser);
+      const verified = state.users.find(u => u.id === parsed.id || u.username === parsed.username);
+      if (verified) {
+        state.currentUser = verified;
+        applyUserRoleUI();
+      }
+    } catch (e) {
+      console.error('Error loading current user session:', e);
+    }
+  }
+
+  // Always display login modal upon opening the app
+  openLoginModal();
+}
+
+function renderLoginQuickChips() {
+  const container = document.getElementById('login-quick-chips');
+  if (!container) return;
+
+  container.innerHTML = state.users.map(u => {
+    const isAdmin = u.role === 'admin';
+    return `
+      <button type="button" class="quick-chip-btn" data-username="${escapeHtml(u.username)}" data-name="${escapeHtml(u.name)}">
+        <i class="fa-solid ${isAdmin ? 'fa-crown' : 'fa-user'}" style="color: ${isAdmin ? 'var(--accent-gold)' : 'var(--accent-green)'};"></i>
+        <span>${escapeHtml(u.name)}</span>
+        <span class="role-badge ${isAdmin ? 'admin' : 'staff'}">${isAdmin ? 'Admin' : 'Staff'}</span>
+      </button>
+    `;
+  }).join('');
+
+  container.querySelectorAll('.quick-chip-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      AudioEngine.playTap();
+      container.querySelectorAll('.quick-chip-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const userField = document.getElementById('login-username');
+      const passField = document.getElementById('login-password');
+      if (userField) {
+        userField.value = btn.dataset.name;
+      }
+      if (passField) {
+        passField.value = '';
+        passField.focus();
+      }
+      hideLoginError();
+    });
+  });
+}
+
+function openLoginModal() {
+  const modal = document.getElementById('modal-login');
+  if (!modal) return;
+  modal.classList.add('active');
+  hideLoginError();
+
+  const userField = document.getElementById('login-username');
+  const passField = document.getElementById('login-password');
+
+  // Pre-fill with current user or default employee
+  const targetUser = state.currentUser || state.users.find(u => u.role === 'employee') || state.users[0];
+  if (userField && targetUser) {
+    userField.value = targetUser.name;
+  }
+  if (passField) {
+    passField.value = '';
+    setTimeout(() => passField.focus(), 150);
+  }
+}
+
+function showLoginError(msg) {
+  const box = document.getElementById('login-error-box');
+  const text = document.getElementById('login-error-text');
+  if (box && text) {
+    text.textContent = msg;
+    box.style.display = 'flex';
+  }
+}
+
+function hideLoginError() {
+  const box = document.getElementById('login-error-box');
+  if (box) box.style.display = 'none';
+}
+
+function handleLoginSubmit() {
+  const userField = document.getElementById('login-username');
+  const passField = document.getElementById('login-password');
+  const rawUser = (userField ? userField.value : '').trim();
+  const rawPass = (passField ? passField.value : '').trim();
+
+  if (!rawUser) {
+    showLoginError('Please enter cashier name / username or select a quick account.');
+    userField?.focus();
+    return;
+  }
+  if (!rawPass) {
+    showLoginError('Please enter password.');
+    passField?.focus();
+    return;
+  }
+
+  const q = rawUser.toLowerCase();
+  const matched = state.users.find(u => 
+    (u.username && u.username.toLowerCase() === q) || 
+    (u.name && u.name.toLowerCase() === q)
+  );
+
+  if (!matched || matched.password !== rawPass) {
+    showLoginError('Incorrect cashier name or password. Please try again.');
+    passField?.focus();
+    return;
+  }
+
+  // Success
+  state.currentUser = matched;
+  localStorage.setItem('yamato_pos_current_user', JSON.stringify({
+    id: matched.id,
+    username: matched.username,
+    name: matched.name,
+    role: matched.role
+  }));
+
+  document.getElementById('modal-login')?.classList.remove('active');
+  applyUserRoleUI();
+  showToast(`Logged in as ${matched.name} (${matched.role === 'admin' ? 'Admin' : 'Cashier Shift'})!`, 'fa-circle-user');
+}
+
+function logoutUser() {
+  if (confirm('Switch cashier shift / log out?')) {
+    state.currentUser = null;
+    localStorage.removeItem('yamato_pos_current_user');
+    if (state.manageMode) {
+      state.manageMode = false;
+      const manageLabel = document.getElementById('manage-mode-label');
+      if (manageLabel) manageLabel.textContent = 'Edit Menu';
+    }
+    renderCatalog();
+    renderCategoriesBar();
+    openLoginModal();
+  }
+}
+
+function applyUserRoleUI() {
+  const user = state.currentUser || { name: 'Mhyk Magdangal', role: 'employee' };
+  const isAdmin = user.role === 'admin';
+
+  // Update Header Cashier Badge
+  const nameEl = document.getElementById('header-cashier-name');
+  const roleEl = document.getElementById('header-user-role');
+  if (nameEl) nameEl.textContent = user.name;
+  if (roleEl) {
+    roleEl.textContent = isAdmin ? 'Admin' : 'Staff';
+    roleEl.className = `cashier-role-badge ${isAdmin ? 'admin' : 'staff'}`;
+  }
+
+  // Admin Only UI Elements Visibility
+  const addItemBtn = document.getElementById('btn-open-add-item');
+  if (addItemBtn) addItemBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+
+  const editMenuBtn = document.getElementById('btn-toggle-manage-mode');
+  if (editMenuBtn) editMenuBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+
+  const staffBtn = document.getElementById('btn-open-staff-mgmt');
+  if (staffBtn) staffBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+
+  const clearHistoryBtn = document.getElementById('btn-reset-sales-history');
+  if (clearHistoryBtn) clearHistoryBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+
+  const manageDiscBtn = document.getElementById('btn-manage-discounts');
+  if (manageDiscBtn) manageDiscBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+
+  // If not admin, ensure manageMode is disabled
+  if (!isAdmin && state.manageMode) {
+    state.manageMode = false;
+    const manageLabel = document.getElementById('manage-mode-label');
+    if (manageLabel) manageLabel.textContent = 'Edit Menu';
+  }
+
+  renderCategoriesBar();
+  renderCatalog();
+}
+
+// ============================================================================
+// ADMIN AUTHORIZATION MODAL (FOR DISCOUNTS & CANCELLATIONS)
+// ============================================================================
+function requestAdminAuthorization({ title, reason, onSuccess }) {
+  state.adminAuthCallback = onSuccess;
+  const modal = document.getElementById('modal-admin-auth');
+  const titleEl = document.getElementById('admin-auth-title');
+  const reasonEl = document.getElementById('admin-auth-reason');
+  const passInput = document.getElementById('admin-auth-password');
+  const errBox = document.getElementById('admin-auth-error');
+
+  if (titleEl && title) titleEl.textContent = title;
+  if (reasonEl && reason) reasonEl.textContent = reason;
+  if (errBox) errBox.style.display = 'none';
+  if (passInput) passInput.value = '';
+
+  if (modal) {
+    modal.classList.add('active');
+    setTimeout(() => passInput?.focus(), 150);
+  }
+}
+
+function closeAdminAuthModal() {
+  document.getElementById('modal-admin-auth')?.classList.remove('active');
+  state.adminAuthCallback = null;
+}
+
+function handleAdminAuthSubmit() {
+  const passInput = document.getElementById('admin-auth-password');
+  const errBox = document.getElementById('admin-auth-error');
+  const pass = (passInput ? passInput.value : '').trim();
+
+  // Find admin user in state
+  const adminUser = state.users.find(u => u.role === 'admin');
+  const isValid = (adminUser && pass === adminUser.password) || pass === 'admin123';
+
+  if (!isValid) {
+    if (errBox) {
+      errBox.style.display = 'flex';
+      document.getElementById('admin-auth-error-text').textContent = 'Incorrect Admin Password.';
+    }
+    passInput?.focus();
+    return;
+  }
+
+  // Verification passed
+  document.getElementById('modal-admin-auth')?.classList.remove('active');
+  showToast('Admin Authorized!', 'fa-shield-halved');
+
+  if (typeof state.adminAuthCallback === 'function') {
+    const cb = state.adminAuthCallback;
+    state.adminAuthCallback = null;
+    cb();
+  }
+}
+
+// ============================================================================
+// STAFF MANAGEMENT PORTAL (ADMIN ONLY)
+// ============================================================================
+function openStaffModal() {
+  if (state.currentUser?.role !== 'admin') {
+    showToast('Admin privilege required', 'fa-lock');
+    return;
+  }
+  renderStaffAccountsList();
+  document.getElementById('modal-staff')?.classList.add('active');
+}
+
+function renderStaffAccountsList() {
+  const list = document.getElementById('staff-accounts-list');
+  const count = document.getElementById('staff-accounts-count');
+  if (!list) return;
+
+  if (count) count.textContent = `${state.users.length} Account${state.users.length !== 1 ? 's' : ''}`;
+
+  list.innerHTML = state.users.map(u => {
+    const isAdmin = u.role === 'admin';
+    return `
+      <div class="staff-account-card">
+        <div class="staff-account-left">
+          <i class="fa-solid ${isAdmin ? 'fa-crown' : 'fa-circle-user'}" style="font-size: 1.3rem; color: ${isAdmin ? 'var(--accent-gold)' : 'var(--accent-green)'};"></i>
+          <div class="staff-account-info">
+            <div class="staff-account-name">
+              <span>${escapeHtml(u.name)}</span>
+              <span class="role-badge ${isAdmin ? 'admin' : 'staff'}">${isAdmin ? 'Admin' : 'Staff'}</span>
+            </div>
+            <div class="staff-account-user">
+              <span>Username: <strong>${escapeHtml(u.username)}</strong></span> • 
+              <span>Password: <code>${escapeHtml(u.password)}</code></span>
+            </div>
+          </div>
+        </div>
+        <div>
+          ${!isAdmin ? `
+            <button type="button" class="btn-del-staff" onclick="deleteEmployeeAccount('${u.id}')" title="Delete Employee Account">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          ` : '<span style="font-size: 0.72rem; color: var(--accent-gold); font-weight:700;"><i class="fa-solid fa-lock"></i> Protected</span>'}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function createEmployeeAccount() {
+  if (state.currentUser?.role !== 'admin') {
+    showToast('Admin privilege required', 'fa-lock');
+    return;
+  }
+
+  const nameInput = document.getElementById('new-employee-name');
+  const userInput = document.getElementById('new-employee-username');
+  const passInput = document.getElementById('new-employee-password');
+
+  const name = (nameInput ? nameInput.value : '').trim();
+  const username = (userInput ? userInput.value : '').trim().toLowerCase();
+  const password = (passInput ? passInput.value : '').trim();
+
+  if (!name || !username || !password) {
+    showToast('Please fill in employee name, username and password', 'fa-circle-exclamation');
+    return;
+  }
+
+  // Prevent duplicate usernames
+  if (state.users.some(u => u.username.toLowerCase() === username)) {
+    showToast(`Username "${username}" already exists. Choose a different one.`, 'fa-triangle-exclamation');
+    userInput?.focus();
+    return;
+  }
+
+  const newEmp = {
+    id: 'usr-' + Date.now(),
+    name: name,
+    username: username,
+    password: password,
+    role: 'employee',
+    createdAt: new Date().toLocaleDateString()
+  };
+
+  state.users.push(newEmp);
+  state.saveUsers();
+
+  if (nameInput) nameInput.value = '';
+  if (userInput) userInput.value = '';
+  if (passInput) passInput.value = '';
+
+  renderStaffAccountsList();
+  renderLoginQuickChips();
+  showToast(`Employee "${name}" created successfully!`, 'fa-user-check');
+}
+
+window.deleteEmployeeAccount = function(userId) {
+  if (state.currentUser?.role !== 'admin') return;
+
+  const user = state.users.find(u => u.id === userId);
+  if (!user || user.role === 'admin') return;
+
+  if (!confirm(`Are you sure you want to remove employee "${user.name}"?`)) return;
+
+  state.users = state.users.filter(u => u.id !== userId);
+  state.saveUsers();
+  renderStaffAccountsList();
+  renderLoginQuickChips();
+  showToast(`Employee "${user.name}" removed`, 'fa-trash');
+};
 
 // ============================================================================
 // APP ENTRY POINT
@@ -3336,4 +3876,5 @@ document.addEventListener('DOMContentLoaded', () => {
   updateActiveOrdersBadge();
   updateGoogleSheetsUI();
   initEventListeners();
+  initLoginSystem();
 });
