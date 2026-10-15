@@ -13,7 +13,7 @@
 
   <!-- Google Fonts & Font Awesome Icons (100% Offline Local Bundle) -->
   <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=32">
+  <link rel="stylesheet" href="style.css?v=33">
 </head>
 <body>
 
@@ -1097,27 +1097,30 @@
   <div class="modal-overlay login-overlay" id="modal-login">
     <div class="modal-card modal-login-card">
       <div class="login-brand-header">
-        <img src="assets/logo.png" alt="Yamato Shokudo Logo" class="login-logo-img">
+        <div class="login-logo-badge">
+          <img src="assets/logo_clean.png" alt="Yamato Shokudo Logo" class="login-logo-img">
+        </div>
         <h2 class="login-brand-title"><span class="red-char">Y</span>amato <span class="red-char">S</span>hokudō</h2>
-        <div class="login-sub-title">Authentic Japanese Comfort Food • POS Terminal</div>
+        <div class="login-kanji-sub">大和食堂 <span class="dot-sep">•</span> 本格日本料理</div>
+        <div class="login-sub-title">POS Terminal & Cashier Access</div>
       </div>
 
       <div class="modal-body login-modal-body">
         <form id="login-form" class="login-form" onsubmit="return false;">
-          <div class="form-group">
+          <div class="form-group login-form-group">
             <label class="form-label" for="login-username">Cashier / Username</label>
             <div class="login-input-wrap">
               <i class="fa-solid fa-user login-field-icon"></i>
-              <input type="text" id="login-username" class="form-input login-input" placeholder="Enter username or cashier name" autocomplete="username" required>
+              <input type="text" id="login-username" class="form-input login-input" placeholder="Enter username" autocomplete="username" required>
             </div>
           </div>
 
-          <div class="form-group">
+          <div class="form-group login-form-group">
             <label class="form-label" for="login-password">Password</label>
             <div class="login-input-wrap">
               <i class="fa-solid fa-lock login-field-icon"></i>
               <input type="password" id="login-password" class="form-input login-input" placeholder="Enter password" autocomplete="current-password" required>
-              <button type="button" class="btn-toggle-password" id="btn-toggle-login-pass" title="Toggle Show Password">
+              <button type="button" class="btn-toggle-password" id="btn-toggle-login-pass" title="Toggle Show Password" aria-label="Toggle Show Password">
                 <i class="fa-regular fa-eye-slash"></i>
               </button>
             </div>
@@ -1135,7 +1138,8 @@
         </form>
 
         <div class="login-footer-hint">
-          <span><i class="fa-solid fa-shield-halved"></i> Role-based access control enabled</span>
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>Role-based access control enabled</span>
         </div>
       </div>
     </div>
@@ -1160,9 +1164,9 @@
           <span id="admin-auth-reason">Manager authorization is required to proceed with this action.</span>
         </div>
 
-        <div class="form-group">
+        <div class="form-group login-form-group">
           <label class="form-label" for="admin-auth-user">Admin Account</label>
-          <input type="text" id="admin-auth-user" class="form-input" value="admin" readonly style="opacity: 0.85;">
+          <input type="text" id="admin-auth-user" class="form-input login-input" value="admin" readonly style="opacity: 0.85; padding-left: 14px !important;">
         </div>
 
         <div class="form-group">
@@ -1261,6 +1265,6 @@
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Main JavaScript App -->
-  <script src="app.js?v=32"></script>
+  <script src="app.js?v=33"></script>
 </body>
 </html>
