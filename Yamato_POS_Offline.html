@@ -4297,7 +4297,7 @@ input, button, select, textarea {
   width: 100vw !important;
   height: 100vh !important;
   height: 100dvh !important;
-  display: flex !important;
+  display: none !important;
   align-items: center !important;
   justify-content: center !important;
   z-index: 10000 !important;
@@ -4306,6 +4306,10 @@ input, button, select, textarea {
   -webkit-backdrop-filter: blur(18px) !important;
   padding: 16px !important;
   overflow-y: auto !important;
+}
+
+.login-overlay.active {
+  display: flex !important;
 }
 
 .modal-login-card {
@@ -9549,6 +9553,7 @@ function openLoginModal() {
   const modal = document.getElementById('modal-login');
   if (!modal) return;
   modal.classList.add('active');
+  modal.style.setProperty('display', 'flex', 'important');
   hideLoginError();
 
   const userField = document.getElementById('login-username');
@@ -9667,7 +9672,11 @@ function handleLoginSubmit() {
     role: matched.role
   }));
 
-  document.getElementById('modal-login')?.classList.remove('active');
+  const loginModal = document.getElementById('modal-login');
+  if (loginModal) {
+    loginModal.classList.remove('active');
+    loginModal.style.setProperty('display', 'none', 'important');
+  }
   applyUserRoleUI();
   showToast(`Welcome, ${matched.name} (${matched.role === 'admin' ? 'Admin' : 'Cashier Shift'})!`, 'fa-circle-user');
 }

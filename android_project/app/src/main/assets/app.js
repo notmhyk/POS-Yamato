@@ -3584,6 +3584,7 @@ function openLoginModal() {
   const modal = document.getElementById('modal-login');
   if (!modal) return;
   modal.classList.add('active');
+  modal.style.setProperty('display', 'flex', 'important');
   hideLoginError();
 
   const userField = document.getElementById('login-username');
@@ -3702,7 +3703,11 @@ function handleLoginSubmit() {
     role: matched.role
   }));
 
-  document.getElementById('modal-login')?.classList.remove('active');
+  const loginModal = document.getElementById('modal-login');
+  if (loginModal) {
+    loginModal.classList.remove('active');
+    loginModal.style.setProperty('display', 'none', 'important');
+  }
   applyUserRoleUI();
   showToast(`Welcome, ${matched.name} (${matched.role === 'admin' ? 'Admin' : 'Cashier Shift'})!`, 'fa-circle-user');
 }

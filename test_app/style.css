@@ -4281,7 +4281,7 @@ input, button, select, textarea {
   width: 100vw !important;
   height: 100vh !important;
   height: 100dvh !important;
-  display: flex !important;
+  display: none !important;
   align-items: center !important;
   justify-content: center !important;
   z-index: 10000 !important;
@@ -4290,6 +4290,10 @@ input, button, select, textarea {
   -webkit-backdrop-filter: blur(18px) !important;
   padding: 16px !important;
   overflow-y: auto !important;
+}
+
+.login-overlay.active {
+  display: flex !important;
 }
 
 .modal-login-card {
