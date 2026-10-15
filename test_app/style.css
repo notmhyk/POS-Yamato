@@ -1317,6 +1317,8 @@ input, button, select, textarea {
 #modal-order-details { z-index: 1250; }
 #modal-receipt { z-index: 1300; }
 #modal-categories { z-index: 1400; }
+#modal-staff { z-index: 1600; }
+#modal-admin-auth { z-index: 2500 !important; }
 
 @keyframes fadeIn {
   from { opacity: 0; }

@@ -3452,10 +3452,10 @@ function initEventListeners() {
     if (!passInput) return;
     if (passInput.type === 'password') {
       passInput.type = 'text';
-      if (icon) icon.className = 'fa-regular fa-eye-slash';
+      if (icon) icon.className = 'fa-regular fa-eye';
     } else {
       passInput.type = 'password';
-      if (icon) icon.className = 'fa-regular fa-eye';
+      if (icon) icon.className = 'fa-regular fa-eye-slash';
     }
   });
 
@@ -3475,10 +3475,10 @@ function initEventListeners() {
     if (!passInput) return;
     if (passInput.type === 'password') {
       passInput.type = 'text';
-      if (icon) icon.className = 'fa-regular fa-eye-slash';
+      if (icon) icon.className = 'fa-regular fa-eye';
     } else {
       passInput.type = 'password';
-      if (icon) icon.className = 'fa-regular fa-eye';
+      if (icon) icon.className = 'fa-regular fa-eye-slash';
     }
   });
 
@@ -3511,8 +3511,6 @@ function initEventListeners() {
 // CASHIER AUTHENTICATION, ROLES & STAFF MANAGEMENT
 // ============================================================================
 function initLoginSystem() {
-  renderLoginQuickChips();
-
   // If user session is already remembered, restore it
   const savedUser = localStorage.getItem('yamato_pos_current_user');
   if (savedUser) {
@@ -3532,41 +3530,6 @@ function initLoginSystem() {
   openLoginModal();
 }
 
-function renderLoginQuickChips() {
-  const container = document.getElementById('login-quick-chips');
-  if (!container) return;
-
-  container.innerHTML = state.users.map(u => {
-    const isAdmin = u.role === 'admin';
-    return `
-      <button type="button" class="quick-chip-btn" data-username="${escapeHtml(u.username)}" data-name="${escapeHtml(u.name)}">
-        <i class="fa-solid ${isAdmin ? 'fa-crown' : 'fa-user'}" style="color: ${isAdmin ? 'var(--accent-gold)' : 'var(--accent-green)'};"></i>
-        <span>${escapeHtml(u.name)}</span>
-        <span class="role-badge ${isAdmin ? 'admin' : 'staff'}">${isAdmin ? 'Admin' : 'Staff'}</span>
-      </button>
-    `;
-  }).join('');
-
-  container.querySelectorAll('.quick-chip-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      AudioEngine.playTap();
-      container.querySelectorAll('.quick-chip-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      const userField = document.getElementById('login-username');
-      const passField = document.getElementById('login-password');
-      if (userField) {
-        userField.value = btn.dataset.name;
-      }
-      if (passField) {
-        passField.value = '';
-        passField.focus();
-      }
-      hideLoginError();
-    });
-  });
-}
-
 function openLoginModal() {
   const modal = document.getElementById('modal-login');
   if (!modal) return;
@@ -3575,15 +3538,18 @@ function openLoginModal() {
 
   const userField = document.getElementById('login-username');
   const passField = document.getElementById('login-password');
+  const toggleIcon = document.querySelector('#btn-toggle-login-pass i');
 
-  // Pre-fill with current user or default employee
-  const targetUser = state.currentUser || state.users.find(u => u.role === 'employee') || state.users[0];
-  if (userField && targetUser) {
-    userField.value = targetUser.name;
+  if (userField) {
+    userField.value = '';
+    setTimeout(() => userField.focus(), 150);
   }
   if (passField) {
     passField.value = '';
-    setTimeout(() => passField.focus(), 150);
+    passField.type = 'password';
+  }
+  if (toggleIcon) {
+    toggleIcon.className = 'fa-regular fa-eye-slash';
   }
 }
 
@@ -3846,7 +3812,6 @@ function createEmployeeAccount() {
   if (passInput) passInput.value = '';
 
   renderStaffAccountsList();
-  renderLoginQuickChips();
   showToast(`Employee "${name}" created successfully!`, 'fa-user-check');
 }
 
@@ -3861,7 +3826,6 @@ window.deleteEmployeeAccount = function(userId) {
   state.users = state.users.filter(u => u.id !== userId);
   state.saveUsers();
   renderStaffAccountsList();
-  renderLoginQuickChips();
   showToast(`Employee "${user.name}" removed`, 'fa-trash');
 };
 

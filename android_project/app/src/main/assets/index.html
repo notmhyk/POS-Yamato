@@ -13,7 +13,7 @@
 
   <!-- Google Fonts & Font Awesome Icons (100% Offline Local Bundle) -->
   <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=31">
+  <link rel="stylesheet" href="style.css?v=32">
 </head>
 <body>
 
@@ -1103,22 +1103,12 @@
       </div>
 
       <div class="modal-body login-modal-body">
-        <div class="login-instruction-pill">
-          <i class="fa-solid fa-cash-register"></i>
-          <span>Select cashier shift or enter login credentials</span>
-        </div>
-
-        <!-- Quick Switcher Chips -->
-        <div class="login-quick-chips" id="login-quick-chips">
-          <!-- Dynamically populated cashier chips -->
-        </div>
-
         <form id="login-form" class="login-form" onsubmit="return false;">
           <div class="form-group">
             <label class="form-label" for="login-username">Cashier / Username</label>
             <div class="login-input-wrap">
               <i class="fa-solid fa-user login-field-icon"></i>
-              <input type="text" id="login-username" class="form-input login-input" placeholder="e.g. Mhyk Magdangal or admin" autocomplete="username" required>
+              <input type="text" id="login-username" class="form-input login-input" placeholder="Enter username or cashier name" autocomplete="username" required>
             </div>
           </div>
 
@@ -1128,7 +1118,7 @@
               <i class="fa-solid fa-lock login-field-icon"></i>
               <input type="password" id="login-password" class="form-input login-input" placeholder="Enter password" autocomplete="current-password" required>
               <button type="button" class="btn-toggle-password" id="btn-toggle-login-pass" title="Toggle Show Password">
-                <i class="fa-regular fa-eye"></i>
+                <i class="fa-regular fa-eye-slash"></i>
               </button>
             </div>
           </div>
@@ -1181,7 +1171,7 @@
             <i class="fa-solid fa-lock login-field-icon"></i>
             <input type="password" id="admin-auth-password" class="form-input login-input" placeholder="Enter admin password" autocomplete="current-password">
             <button type="button" class="btn-toggle-password" id="btn-toggle-auth-pass" title="Toggle Show Password">
-              <i class="fa-regular fa-eye"></i>
+              <i class="fa-regular fa-eye-slash"></i>
             </button>
           </div>
         </div>
@@ -1271,6 +1261,6 @@
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Main JavaScript App -->
-  <script src="app.js?v=31"></script>
+  <script src="app.js?v=32"></script>
 </body>
 </html>

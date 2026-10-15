@@ -1333,6 +1333,8 @@ input, button, select, textarea {
 #modal-order-details { z-index: 1250; }
 #modal-receipt { z-index: 1300; }
 #modal-categories { z-index: 1400; }
+#modal-staff { z-index: 1600; }
+#modal-admin-auth { z-index: 2500 !important; }
 
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -5693,22 +5695,12 @@ input, button, select, textarea {
       </div>
 
       <div class="modal-body login-modal-body">
-        <div class="login-instruction-pill">
-          <i class="fa-solid fa-cash-register"></i>
-          <span>Select cashier shift or enter login credentials</span>
-        </div>
-
-        <!-- Quick Switcher Chips -->
-        <div class="login-quick-chips" id="login-quick-chips">
-          <!-- Dynamically populated cashier chips -->
-        </div>
-
         <form id="login-form" class="login-form" onsubmit="return false;">
           <div class="form-group">
             <label class="form-label" for="login-username">Cashier / Username</label>
             <div class="login-input-wrap">
               <i class="fa-solid fa-user login-field-icon"></i>
-              <input type="text" id="login-username" class="form-input login-input" placeholder="e.g. Mhyk Magdangal or admin" autocomplete="username" required>
+              <input type="text" id="login-username" class="form-input login-input" placeholder="Enter username or cashier name" autocomplete="username" required>
             </div>
           </div>
 
@@ -5718,7 +5710,7 @@ input, button, select, textarea {
               <i class="fa-solid fa-lock login-field-icon"></i>
               <input type="password" id="login-password" class="form-input login-input" placeholder="Enter password" autocomplete="current-password" required>
               <button type="button" class="btn-toggle-password" id="btn-toggle-login-pass" title="Toggle Show Password">
-                <i class="fa-regular fa-eye"></i>
+                <i class="fa-regular fa-eye-slash"></i>
               </button>
             </div>
           </div>
@@ -5771,7 +5763,7 @@ input, button, select, textarea {
             <i class="fa-solid fa-lock login-field-icon"></i>
             <input type="password" id="admin-auth-password" class="form-input login-input" placeholder="Enter admin password" autocomplete="current-password">
             <button type="button" class="btn-toggle-password" id="btn-toggle-auth-pass" title="Toggle Show Password">
-              <i class="fa-regular fa-eye"></i>
+              <i class="fa-regular fa-eye-slash"></i>
             </button>
           </div>
         </div>
@@ -9322,10 +9314,10 @@ function initEventListeners() {
     if (!passInput) return;
     if (passInput.type === 'password') {
       passInput.type = 'text';
-      if (icon) icon.className = 'fa-regular fa-eye-slash';
+      if (icon) icon.className = 'fa-regular fa-eye';
     } else {
       passInput.type = 'password';
-      if (icon) icon.className = 'fa-regular fa-eye';
+      if (icon) icon.className = 'fa-regular fa-eye-slash';
     }
   });
 
@@ -9345,10 +9337,10 @@ function initEventListeners() {
     if (!passInput) return;
     if (passInput.type === 'password') {
       passInput.type = 'text';
-      if (icon) icon.className = 'fa-regular fa-eye-slash';
+      if (icon) icon.className = 'fa-regular fa-eye';
     } else {
       passInput.type = 'password';
-      if (icon) icon.className = 'fa-regular fa-eye';
+      if (icon) icon.className = 'fa-regular fa-eye-slash';
     }
   });
 
@@ -9381,8 +9373,6 @@ function initEventListeners() {
 // CASHIER AUTHENTICATION, ROLES & STAFF MANAGEMENT
 // ============================================================================
 function initLoginSystem() {
-  renderLoginQuickChips();
-
   // If user session is already remembered, restore it
   const savedUser = localStorage.getItem('yamato_pos_current_user');
   if (savedUser) {
@@ -9402,41 +9392,6 @@ function initLoginSystem() {
   openLoginModal();
 }
 
-function renderLoginQuickChips() {
-  const container = document.getElementById('login-quick-chips');
-  if (!container) return;
-
-  container.innerHTML = state.users.map(u => {
-    const isAdmin = u.role === 'admin';
-    return `
-      <button type="button" class="quick-chip-btn" data-username="${escapeHtml(u.username)}" data-name="${escapeHtml(u.name)}">
-        <i class="fa-solid ${isAdmin ? 'fa-crown' : 'fa-user'}" style="color: ${isAdmin ? 'var(--accent-gold)' : 'var(--accent-green)'};"></i>
-        <span>${escapeHtml(u.name)}</span>
-        <span class="role-badge ${isAdmin ? 'admin' : 'staff'}">${isAdmin ? 'Admin' : 'Staff'}</span>
-      </button>
-    `;
-  }).join('');
-
-  container.querySelectorAll('.quick-chip-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      AudioEngine.playTap();
-      container.querySelectorAll('.quick-chip-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      const userField = document.getElementById('login-username');
-      const passField = document.getElementById('login-password');
-      if (userField) {
-        userField.value = btn.dataset.name;
-      }
-      if (passField) {
-        passField.value = '';
-        passField.focus();
-      }
-      hideLoginError();
-    });
-  });
-}
-
 function openLoginModal() {
   const modal = document.getElementById('modal-login');
   if (!modal) return;
@@ -9445,15 +9400,18 @@ function openLoginModal() {
 
   const userField = document.getElementById('login-username');
   const passField = document.getElementById('login-password');
+  const toggleIcon = document.querySelector('#btn-toggle-login-pass i');
 
-  // Pre-fill with current user or default employee
-  const targetUser = state.currentUser || state.users.find(u => u.role === 'employee') || state.users[0];
-  if (userField && targetUser) {
-    userField.value = targetUser.name;
+  if (userField) {
+    userField.value = '';
+    setTimeout(() => userField.focus(), 150);
   }
   if (passField) {
     passField.value = '';
-    setTimeout(() => passField.focus(), 150);
+    passField.type = 'password';
+  }
+  if (toggleIcon) {
+    toggleIcon.className = 'fa-regular fa-eye-slash';
   }
 }
 
@@ -9716,7 +9674,6 @@ function createEmployeeAccount() {
   if (passInput) passInput.value = '';
 
   renderStaffAccountsList();
-  renderLoginQuickChips();
   showToast(`Employee "${name}" created successfully!`, 'fa-user-check');
 }
 
@@ -9731,7 +9688,6 @@ window.deleteEmployeeAccount = function(userId) {
   state.users = state.users.filter(u => u.id !== userId);
   state.saveUsers();
   renderStaffAccountsList();
-  renderLoginQuickChips();
   showToast(`Employee "${user.name}" removed`, 'fa-trash');
 };
 
